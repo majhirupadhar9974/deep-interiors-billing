@@ -13,6 +13,139 @@
 <link rel="icon" href="icons/icon-192.png">
 <title>Deep Interiors & Projects - Billing System</title>
 
+<!-- Firebase SDK (Compat version for easy integration) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBARCa2LUieSHg-H6P0uyL5a8mvB3VjdAw",
+    authDomain: "deep-interiors-billing.firebaseapp.com",
+    projectId: "deep-interiors-billing",
+    storageBucket: "deep-interiors-billing.firebasestorage.app",
+    messagingSenderId: "702457842613",
+    appId: "1:702457842613:web:82fcf58bef7b7f7e13a7fc"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+</script>
+<script>
+
+/* ==================== FIREBASE AUTH + 3HR SESSION ==================== */
+const SESSION_HOURS = 3;
+const SESSION_MS = SESSION_HOURS * 60 * 60 * 1000;
+let sessionTimer = null;
+
+function showLoginScreen() {
+  const login = document.getElementById("login-screen");
+  if (login) login.style.display = "flex";
+  // Hide main app content
+  document.body.style.overflow = "hidden";
+}
+
+function hideLoginScreen() {
+  const login = document.getElementById("login-screen");
+  if (login) login.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function startSessionTimer() {
+  if (sessionTimer) clearTimeout(sessionTimer);
+  const loginTime = Date.now();
+  localStorage.setItem("fb_login_time", loginTime);
+  sessionTimer = setTimeout(() => {
+    alert("Session expired (3 hours). Please login again.");
+    doLogout();
+  }, SESSION_MS);
+}
+
+function checkSessionValid() {
+  const loginTime = parseInt(localStorage.getItem("fb_login_time") || "0", 10);
+  if (!loginTime) return false;
+  return (Date.now() - loginTime) < SESSION_MS;
+}
+
+async function doLogin() {
+  const email = (document.getElementById("login-email").value || "").trim();
+  const password = document.getElementById("login-password").value || "";
+  const errEl = document.getElementById("login-error");
+  const btn = document.getElementById("login-btn");
+  
+  if (!email || !password) {
+    errEl.textContent = "Email aur Password dono required hain";
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = "Logging in...";
+  errEl.textContent = "";
+  
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    localStorage.setItem("fb_login_time", Date.now());
+    startSessionTimer();
+    hideLoginScreen();
+    // App ready
+    if (typeof onFirebaseReady === "function") onFirebaseReady();
+  } catch (e) {
+    console.error(e);
+    let msg = "Login failed";
+    if (e.code === "auth/user-not-found") msg = "User not found";
+    else if (e.code === "auth/wrong-password") msg = "Wrong password";
+    else if (e.code === "auth/invalid-email") msg = "Invalid email";
+    else if (e.code === "auth/invalid-credential") msg = "Wrong email or password";
+    else msg = e.message || "Login failed";
+    errEl.textContent = msg;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Login";
+  }
+}
+
+async 
+function onFirebaseReady() {
+  const btn = document.getElementById("logout-btn");
+  if (btn) btn.style.display = "block";
+  console.log("Firebase ready - user logged in");
+}
+
+function doLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {}
+  localStorage.removeItem("fb_login_time");
+  if (sessionTimer) clearTimeout(sessionTimer);
+  showLoginScreen();
+}
+
+// Allow Enter key to login
+document.addEventListener("DOMContentLoaded", () => {
+  const pass = document.getElementById("login-password");
+  if (pass) pass.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") doLogin();
+  });
+});
+
+// Auth state listener
+auth.onAuthStateChanged((user) => {
+  if (user && checkSessionValid()) {
+    hideLoginScreen();
+    startSessionTimer();
+    if (typeof onFirebaseReady === "function") onFirebaseReady();
+  } else {
+    if (user) {
+      // Session expired but still authenticated → force logout
+      doLogout();
+    } else {
+      showLoginScreen();
+    }
+  }
+});
+
+</script>
+
+
 <style>
 *{box-sizing:border-box}
 body{
@@ -1304,6 +1437,29 @@ input,select{
 </head>
 
 <body>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#2E1501 0%,#5A3A1A 50%,#bf8f00 100%);display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 12px 40px rgba(0,0,0,.3);text-align:center;">
+    <div style="font-size:28px;font-weight:800;color:#2E1501;margin-bottom:4px;">DEEP INTERIORS</div>
+    <div style="font-size:13px;color:#bf8f00;font-weight:600;letter-spacing:1px;margin-bottom:24px;">& PROJECTS — Billing Login</div>
+    
+    <div style="text-align:left;margin-bottom:14px;">
+      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Email</label>
+      <input type="email" id="login-email" placeholder="Enter email" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
+    </div>
+    <div style="text-align:left;margin-bottom:18px;">
+      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Password</label>
+      <input type="password" id="login-password" placeholder="Enter password" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
+    </div>
+    
+    <button type="button" id="login-btn" onclick="doLogin()" style="width:100%;padding:14px;background:linear-gradient(135deg,#bf8f00,#9a7300);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:12px;">Login</button>
+    
+    <div id="login-error" style="color:#c0392b;font-size:13px;font-weight:600;min-height:20px;margin-bottom:8px;"></div>
+    <div style="font-size:11px;color:#999;">Session expires after 3 hours</div>
+  </div>
+</div>
+
 
 <!-- ========== LANDING PAGE ========== -->
 <div class="landing-appbar" id="landing-appbar">
@@ -4349,6 +4505,9 @@ window.addEventListener("load",async ()=>{
     }
 });
 </script>
+
+
+<button type="button" id="logout-btn" onclick="doLogout()" style="position:fixed;bottom:16px;right:16px;z-index:9000;background:#c0392b;color:#fff;border:none;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);display:none;">Logout</button>
 
 </body>
 </html>
