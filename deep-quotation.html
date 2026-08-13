@@ -103,14 +103,13 @@ async function doLogin() {
   }
 }
 
-async 
 function onFirebaseReady() {
   const btn = document.getElementById("logout-btn");
   if (btn) btn.style.display = "block";
   console.log("Firebase ready - user logged in");
 }
 
-function doLogout() {
+async function doLogout() {
   try {
     await auth.signOut();
   } catch (e) {}
