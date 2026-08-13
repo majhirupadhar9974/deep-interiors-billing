@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Deep Quotation">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" href="icons/icon-192.png">
 <title>Deep Interiors & Projects - Billing System</title>
 
@@ -33,113 +33,35 @@ body{
 }
 
 /* ===== LANDING PAGE ===== */
-#landing-page{
-    max-width:720px;
-    margin:40px auto;
-    padding:28px 24px 36px;
-    background:#fff;
-    border-radius:12px;
-    box-shadow:0 4px 24px rgba(0,0,0,.08);
-    text-align:center;
-}
-.landing-logo{
-    max-width:280px;
-    height:auto;
-    margin:0 auto 12px;
-    display:block;
-}
-.landing-company{
-    font-size:26px;
-    font-weight:800;
-    color:#2E1501;
-    letter-spacing:0.5px;
-    margin:0 0 6px;
-    text-transform:uppercase;
-}
-.landing-tagline{
-    font-size:12px;
-    color:#bf8f00;
-    font-weight:600;
-    letter-spacing:1px;
-    margin:0 0 18px;
-}
-.landing-details{
-    font-size:13px;
-    color:#555;
-    line-height:1.6;
-    margin-bottom:28px;
-    padding:0 10px;
-}
-.landing-btns{
-    display:flex;
-    gap:16px;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin-top:10px;
-}
-.landing-btn{
-    flex:1 1 220px;
-    max-width:280px;
-    padding:22px 18px;
-    border:none;
-    border-radius:10px;
-    font-size:18px;
-    font-weight:700;
-    cursor:pointer;
-    color:#fff;
-    transition:transform .15s, box-shadow .15s;
-    box-shadow:0 4px 14px rgba(0,0,0,.18);
-}
+.landing-appbar{display:none}
+#landing-page{max-width:720px;margin:40px auto;padding:28px 24px 36px;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:center}
+.landing-logo{max-width:280px;height:auto;margin:0 auto 12px;display:block}
+.landing-company{font-size:26px;font-weight:800;color:#2E1501;letter-spacing:0.5px;margin:0 0 6px;text-transform:uppercase}
+.landing-tagline{font-size:12px;color:#bf8f00;font-weight:600;letter-spacing:1px;margin:0 0 18px}
+.landing-details{font-size:13px;color:#555;line-height:1.7;margin-bottom:28px;padding:0 10px;text-align:center}
+.landing-details .ld-line{display:flex;align-items:flex-start;justify-content:center;gap:8px;margin:6px 0}
+.landing-details .ld-ico{flex:0 0 18px;text-align:center;font-size:14px;line-height:1.5}
+.landing-details .ld-txt{text-align:left;max-width:320px}
+.landing-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.landing-btn{flex:1 1 220px;max-width:280px;padding:22px 18px;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;color:#fff;transition:transform .15s, box-shadow .15s;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .landing-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.22)}
 .landing-btn:active{transform:translateY(0)}
-.landing-btn-quot{
-    background:linear-gradient(135deg,#bf8f00,#9a7300);
-}
-.landing-btn-proforma{
-    background:linear-gradient(135deg,#2E1501,#5A3A1A);
-}
+.landing-btn-quot{background:linear-gradient(135deg,#bf8f00,#9a7300)}
+.landing-btn-proforma{background:linear-gradient(135deg,#2E1501,#5A3A1A)}
 .landing-btn-icon{font-size:28px;display:block;margin-bottom:6px}
-.landing-footer-btns{
-    margin-top:28px;
-    display:flex;
-    gap:12px;
-    justify-content:center;
-    flex-wrap:wrap;
-}
-.landing-footer-btns .btn{
-    padding:10px 18px;
-    font-size:14px;
-    margin:0;
-}
+.landing-footer-btns{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.landing-footer-btns .btn{padding:10px 18px;font-size:14px;margin:0;border-radius:8px}
 .screen-entry{display:none}
 .screen-entry.active{display:block}
 #landing-page.hidden{display:none}
 
 /* Entry form: meta + party */
-.doc-meta-row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-bottom:14px;
-    padding-bottom:12px;
-    border-bottom:1px solid #ddd;
-}
+.doc-meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;padding:12px;border:1px solid #e8e0d0;border-radius:10px;background:#faf8f4}
 .doc-meta-cell{flex:1 1 120px;min-width:110px}
-.doc-meta-cell label{display:block;font-size:11px;font-weight:bold;color:#555;margin-bottom:3px}
-.doc-meta-cell input{width:100%;padding:6px 8px;border:1px solid #ccc;border-radius:4px;font-size:14px}
-
-.party-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:14px;
-    margin-bottom:16px;
-}
-.party-box{
-    border:1px solid #ccc;
-    border-radius:6px;
-    padding:12px;
-    background:#fafafa;
-}
+.doc-meta-cell label{display:block;font-size:11px;font-weight:bold;color:#555;margin-bottom:4px}
+.doc-meta-cell input{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fff}
+.party-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.party-box{border:1px solid #e0d8c8;border-radius:10px;padding:12px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.04)}
 .party-head{
     font-size:13px;
     font-weight:800;
@@ -191,20 +113,25 @@ body{
 }
 
 @media screen and (max-width:600px){
-    #landing-page{margin:12px;padding:20px 14px 28px}
-    .landing-company{font-size:20px}
-    .landing-btn{font-size:16px;padding:18px 14px}
-    .landing-logo{max-width:220px}
+    body{background:#f5f5f5}
+    .landing-appbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border-bottom:1px solid #eee;position:sticky;top:0;z-index:50}
+    .landing-appbar .lab-menu{background:none;border:none;font-size:22px;line-height:1;padding:4px 6px;cursor:pointer;color:#222}
+    .landing-appbar .lab-title{font-size:16px;font-weight:800;color:#1a1a1a;letter-spacing:0.4px;text-transform:uppercase}
+    #landing-page{margin:0;padding:20px 18px 32px;max-width:100%;border-radius:0;box-shadow:none;min-height:calc(100vh - 50px)}
+    .landing-logo{max-width:200px;margin-bottom:10px}
+    .landing-company{font-size:22px;line-height:1.25;margin-bottom:8px}
+    .landing-tagline{font-size:11px;margin-bottom:16px;letter-spacing:1.2px}
+    .landing-details{font-size:13px;margin-bottom:22px;padding:0;color:#444}
+    .landing-details .ld-txt{max-width:100%}
+    .landing-btns{flex-direction:column;gap:12px;margin-top:4px}
+    .landing-btn{flex:none;width:100%;max-width:100%;padding:20px 16px;font-size:17px;border-radius:12px}
+    .landing-btn-icon{font-size:26px;margin-bottom:4px}
+    .landing-footer-btns{margin-top:20px;gap:10px}
+    .landing-footer-btns .btn{flex:1;padding:12px 14px;font-size:14px;border-radius:8px}
+    .register-overlay{padding:0;align-items:stretch}
+    .register-box{max-width:100%;max-height:100vh;height:100%;border-radius:0}
 }
-.main-title{
-    font-size:22px;
-    font-weight:bold;
-    border-bottom:2px solid #000;
-    padding-bottom:5px;
-    margin-bottom:15px;
-    text-transform:uppercase;
-    letter-spacing:1px;
-}
+.main-title{font-size:22px;font-weight:bold;border-bottom:2px solid #bf8f00;padding-bottom:8px;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;color:#2E1501}
 .settings-btn{
     position:fixed;
     top:10px;
@@ -370,13 +297,9 @@ input,select{
     background:#F0E0A0;
 }
 
-.no-print{
-    margin-top:25px;
-    text-align:center;
-    background:#e0e0e0;
-    padding:15px;
-    border-radius:5px;
-}
+.no-print{margin-top:25px;text-align:center;background:#e0e0e0;padding:15px;border-radius:5px}
+#entry-action-bar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;background:#faf8f4;border:1px solid #e0d8c8;border-radius:12px;padding:14px}
+#entry-action-bar .btn{margin:0;border-radius:10px;font-size:15px;padding:12px 18px}
 .help-text{
     font-size:12px;
     margin-top:8px;
@@ -384,27 +307,42 @@ input,select{
 }
 
 @media screen and (max-width:700px){
-    body{margin:8px}
-    .invoice-box{padding:12px}
+    body{margin:0;padding:0;background:#f4f0e8}
+    .invoice-box{padding:12px 12px 100px;margin:0;max-width:100%;border:none;border-radius:0;box-shadow:none}
     .shop-name{font-size:24px}
     .shop-details{font-size:12px}
     .settings-btn{top:8px;right:8px;width:40px;height:40px;line-height:40px;font-size:20px;padding:0}
+    .settings-btn[style*="left"]{left:8px!important}
+    .main-title{font-size:18px;text-align:center;margin:8px 44px 12px;padding-bottom:10px}
+    .doc-meta-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .doc-meta-cell{min-width:0}
+    .doc-meta-cell input{font-size:16px;min-height:44px}
+    .party-grid{grid-template-columns:1fr}
+    .party-box input,.party-box textarea{font-size:16px;min-height:44px}
+    .party-3col{grid-template-columns:1fr 1fr}
+    .party-3col > div:last-child{grid-column:1 / -1}
+    .items-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1px solid #e0d8c8}
+    .items-table{min-width:640px}
+    .calc-table{width:100%}
+    .btn-action-row{display:flex;flex-wrap:wrap;gap:8px}
+    .btn-action-row .btn{flex:1 1 auto;min-width:30%;margin:0;font-size:14px!important;padding:12px 10px!important;border-radius:10px}
+    #entry-action-bar.entry-bar-on{
+        position:fixed;left:0;right:0;bottom:0;z-index:9000;margin:0;
+        padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px));
+        background:#fff;border-top:1px solid #e0d8c8;box-shadow:0 -4px 20px rgba(0,0,0,.12);
+        display:flex!important;flex-wrap:nowrap;gap:6px;border-radius:0;
+    }
+    #entry-action-bar.entry-bar-on .screen-credit{display:none}
+    #entry-action-bar.entry-bar-on .btn{
+        flex:1 1 0;margin:0!important;width:auto!important;display:flex!important;
+        flex-direction:column;align-items:center;justify-content:center;gap:2px;
+        font-size:11px!important;padding:8px 4px!important;border-radius:10px;min-height:52px;
+    }
     .bill-grid{flex-direction:column}
     .bill-to,.invoice-details{width:100%}
     .bill-to{border-right:none;border-bottom:1px solid #000}
     .inv-cell{width:100%}
-    .inv-cell:nth-child(2n){border-right:1px solid #000}
-    .inv-cell:nth-child(3){border-bottom:none}
-    .items-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .items-table{min-width:640px}
-    .calc-table{width:100%}
-    .btn{
-        display:block;
-        width:100%;
-        margin:0 0 10px 0;
-        font-size:16px!important;
-        padding:14px 20px!important;
-    }
+    .btn{display:block;width:100%;margin:0 0 10px 0;font-size:16px!important;padding:14px 20px!important;border-radius:10px}
     .btn-action-row .btn{width:auto;display:inline-block}
 }
 
@@ -472,165 +410,117 @@ input,select{
     color:#333;
 }
 
-/* Settings accordion */
-.set-acc{border:1px solid #e0e0e0;border-radius:8px;margin-bottom:10px;overflow:hidden;background:#fff}
-.set-acc-head{
-    width:100%;text-align:left;padding:12px 14px;border:none;background:#f7f7f7;
-    font-size:14px;font-weight:700;color:#222;cursor:pointer;
-    display:flex;justify-content:space-between;align-items:center;
-}
-.set-acc-head:hover{background:#f0f0f0}
-.set-acc-head .chev{font-size:12px;color:#888;transition:transform .15s}
-.set-acc.open .set-acc-head{background:#bf8f00;color:#fff}
-.set-acc.open .set-acc-head .chev{color:#fff;transform:rotate(180deg)}
-.set-acc-body{display:none;padding:12px 14px 14px;border-top:1px solid #eee}
+/* Settings accordion — mobile card style */
+.set-acc{border:1px solid #ebe4d8;border-radius:14px;margin-bottom:10px;overflow:hidden;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.set-acc-head{width:100%;text-align:left;padding:14px 14px;border:none;background:#fff;font-size:15px;font-weight:700;color:#2E1501;cursor:pointer;display:flex;align-items:center;gap:12px}
+.set-acc-head:hover{background:#faf8f4}
+.set-acc-head .set-ico{width:36px;height:36px;border-radius:10px;background:#FDF0E6;color:#bf8f00;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.set-acc-head .set-head-text{flex:1;min-width:0;text-align:left}
+.set-acc-head .set-head-title{display:block;font-size:15px;font-weight:700;color:#2E1501;line-height:1.2}
+.set-acc-head .set-head-sub{display:block;font-size:11px;font-weight:500;color:#888;margin-top:3px;line-height:1.3}
+.set-acc-head .chev{font-size:12px;color:#aaa;transition:transform .15s;flex-shrink:0}
+.set-acc.open .set-acc-head{background:#FDF0E6}
+.set-acc.open .set-acc-head .chev{color:#bf8f00;transform:rotate(180deg)}
+.set-acc.open .set-acc-head .set-ico{background:#bf8f00;color:#fff}
+.set-acc-body{display:none;padding:4px 14px 14px;border-top:1px solid #f0ebe3;background:#fff}
 .set-acc.open .set-acc-body{display:block}
 .set-acc-body label{margin-top:8px}
 .set-fixed-note{font-size:11px;color:#888;margin:0 0 6px}
 .pass-wrap{position:relative}
 .pass-wrap input{padding-right:40px}
-.pass-eye{
-    position:absolute;right:8px;top:50%;transform:translateY(-50%);
-    border:none;background:transparent;cursor:pointer;font-size:16px;padding:4px;
-}
-.set-logout-btn{
-    width:100%;margin-top:16px;padding:14px;font-size:16px;font-weight:700;
-    background:#333;color:#fff;border:none;border-radius:8px;cursor:pointer;
-}
-.set-logout-btn:hover{background:#000}
-
-.modal-footer{
-    padding:12px 18px;
-    border-top:1px solid #eee;
-    display:flex;
-    gap:10px;
-    justify-content:flex-end;
-    flex-shrink:0;
-    background:#fff;
+.pass-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;cursor:pointer;font-size:16px;padding:4px}
+.set-acc.danger-acc{border-color:#f0c7c7;background:#fdf6f6}
+.set-acc.danger-acc .set-acc-head{background:#fdf6f6}
+.set-acc.danger-acc .set-ico{background:#fde8e8;color:#c0392b}
+.set-acc.danger-acc .set-head-title{color:#c0392b}
+.set-acc.danger-acc.open .set-acc-head{background:#fde8e8}
+.set-logout-btn{width:100%;margin-top:14px;padding:14px;font-size:16px;font-weight:700;background:#2E1501;color:#fff;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.set-logout-btn:hover{background:#1a0c01}
+.modal-footer{padding:12px 18px;border-top:1px solid #eee;display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;background:#fff}
+.modal-footer .btn{border-radius:10px;margin:0}
+.modal-footer .btn-save-settings{background:#27ae60;color:#fff;flex:1;font-weight:700}
+.modal-footer .btn-cancel-settings{background:#f0ebe3;color:#2E1501;flex:1;font-weight:700;border:1px solid #e0d8c8}
+@media screen and (max-width:600px){
+    #settings-overlay.modal-overlay{padding:0;align-items:stretch;background:#f7f3ec}
+    #settings-overlay .modal-box{max-width:100%;max-height:100vh;height:100%;border-radius:0;background:#f7f3ec}
+    #settings-overlay .modal-header{background:#fff;color:#2E1501;border-bottom:1px solid #ebe4d8;padding:12px 14px;justify-content:center;position:relative}
+    #settings-overlay .modal-header h2{font-size:16px;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+    #settings-overlay .modal-header .set-close-x{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:#f0ebe3;color:#2E1501;border:none;border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;margin:0}
+    #settings-overlay .modal-body{padding:12px 12px 20px;background:#f7f3ec}
+    #settings-overlay .modal-body input,#settings-overlay .modal-body textarea,#settings-overlay .modal-body select{font-size:16px;padding:10px 12px;border-radius:8px;min-height:44px}
+    #settings-overlay .modal-footer{padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px));background:#fff;gap:10px}
+    #settings-overlay .modal-footer .btn{width:auto;display:block;padding:14px 12px!important;font-size:15px!important}
 }
 
 .register-overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.55);
-    z-index:9999;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:16px;
+    position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;
+    display:flex;align-items:center;justify-content:center;padding:16px;
 }
 .register-box{
-    background:#fff;
-    width:100%;
-    max-width:760px;
-    max-height:90vh;
-    border-radius:8px;
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
+    background:#fff;width:100%;max-width:760px;max-height:90vh;border-radius:14px;
+    display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.18);
 }
 .register-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 18px;
-    background:#bf8f00;
-    color:#fff;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;background:#bf8f00;color:#fff;
 }
-.register-header h2{margin:0;font-size:19px}
+.register-header h2{margin:0;font-size:18px;font-weight:800}
 
-.register-ribbon-wrap{
-    display:flex;
-    align-items:stretch;
-    gap:8px;
-    padding:8px 12px;
-    border-bottom:1px solid #e0e0e0;
-    background:#fafafa;
-}
-.reg-doctype-col{
-    display:flex;
-    flex-direction:column;
-    gap:3px;
-    flex:0 0 auto;
-    min-width:52px;
+/* Tabs: Mix | Quot | PI */
+.reg-tabs{
+    display:flex;border-bottom:1px solid #eee;background:#fff;
 }
 .reg-dt-btn{
-    border:1px solid #ccc;
-    background:#fff;
-    color:#333;
-    font-size:11px;
-    font-weight:700;
-    padding:5px 8px;
-    border-radius:5px;
-    cursor:pointer;
-    line-height:1.2;
-    text-align:center;
-    white-space:nowrap;
+    flex:1;border:none;background:transparent;color:#888;font-size:14px;font-weight:700;
+    padding:12px 8px;cursor:pointer;border-bottom:3px solid transparent;text-align:center;
 }
-.reg-dt-btn.active{
-    background:#bf8f00;
-    border-color:#bf8f00;
-    color:#fff;
+.reg-dt-btn.active{color:#bf8f00;border-bottom-color:#bf8f00}
+
+/* Icon action row */
+.register-ribbon-wrap{
+    display:flex;flex-direction:column;gap:0;padding:0;border-bottom:1px solid #eee;background:#fff;
 }
+.reg-doctype-col{display:none}
 .reg-actions-row{
-    flex:1 1 auto;
-    display:flex;
-    flex-wrap:wrap;
-    gap:5px;
-    align-items:center;
-    padding:0 !important;
-    border:none !important;
+    display:flex;flex-wrap:nowrap;gap:0;align-items:stretch;justify-content:space-between;
+    padding:8px 6px !important;border:none !important;overflow-x:auto;-webkit-overflow-scrolling:touch;
 }
-@media (max-width:480px){
-    .reg-doctype-col{min-width:48px}
-    .reg-dt-btn{font-size:10px;padding:4px 6px}
+.reg-actions-row .filter-btn, .reg-actions-row .reg-icon-btn{
+    flex:1 1 0;min-width:52px;border:none;background:transparent;color:#555;
+    padding:8px 4px;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.15;
 }
+.reg-actions-row .filter-btn:hover, .reg-actions-row .reg-icon-btn:hover{background:#f5f0e6}
+.reg-actions-row .filter-btn .ico, .reg-actions-row .reg-icon-btn .ico{font-size:18px;line-height:1}
+.reg-actions-row label.filter-btn{display:flex;flex-direction:column;align-items:center;gap:3px;margin:0}
+.reg-actions-row input[type=checkbox]{width:16px;height:16px;accent-color:#bf8f00;margin:0}
+#reg-selected-count{font-size:11px;color:#888;padding:4px 10px;font-weight:600}
 
 .register-filters{
-    padding:10px 18px 0;
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    align-items:center;
+    padding:10px 14px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
 }
 .filter-btn{
-    background:#FDF0E6;
-    border:1px solid #bf8f00;
-    color:#bf8f00;
-    padding:6px 12px;
-    border-radius:4px;
-    font-size:13px;
-    font-weight:bold;
-    cursor:pointer;
+    background:#fff;border:1.5px solid #e0c98a;color:#bf8f00;
+    padding:7px 14px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;
 }
-.filter-btn.active{background:#bf8f00;color:#fff}
-.register-custom-dates{
-    display:none;
-    gap:8px;
-    align-items:center;
-    flex-wrap:wrap;
-}
+.filter-btn.active{background:#bf8f00;color:#fff;border-color:#bf8f00}
+.register-custom-dates{display:none;gap:8px;align-items:center;flex-wrap:wrap}
 .register-custom-dates.show{display:flex}
 .register-custom-dates input{width:auto;padding:5px 8px;font-size:13px}
 .register-summary{
-    margin:10px 18px 0;
-    padding:10px 12px;
-    background:#FDF0E6;
-    border:1px solid #bf8f00;
-    border-radius:6px;
-    font-size:14px;
-    font-weight:bold;
-    display:flex;
-    justify-content:space-between;
-    flex-wrap:wrap;
-    gap:8px;
+    margin:12px 14px 0;padding:14px 16px;background:#fff;
+    border:1px solid #f0e6d0;border-radius:14px;
+    font-size:14px;font-weight:bold;
+    display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;
+    box-shadow:0 1px 4px rgba(0,0,0,.04);
 }
+.register-summary .reg-sum-left{display:flex;flex-direction:column;gap:4px}
+.register-summary .reg-sum-count{font-size:28px;font-weight:800;color:#1a1a1a;line-height:1.1}
+.register-summary .reg-sum-meta{font-size:12px;font-weight:600;color:#c0392b}
+.register-summary .reg-sum-amt{font-size:22px;font-weight:800;color:#bf8f00}
 .register-search{
-    margin:12px 18px 0;
-    padding:10px 12px;
-    font-size:15px;
-    border:1px solid #ccc;
-    border-radius:4px;
+    margin:12px 14px 0;padding:12px 14px;font-size:15px;
+    border:1px solid #e8e0d0;border-radius:12px;width:calc(100% - 28px);box-sizing:border-box;background:#faf8f4;
 }
 .register-list{
     overflow-y:auto;
@@ -1200,6 +1090,7 @@ input,select{
 .ref-sign-label{font-weight:700;font-size:10.5px}
 
 @media print{
+    .landing-appbar{display:none!important}
     @page{size:A4;margin:0}
     html,body{margin:0!important;padding:0!important;background:#fff!important}
     .no-print,.screen-items,.main-title,.shop-header,.settings-btn,
@@ -1254,14 +1145,20 @@ input,select{
 <body>
 
 <!-- ========== LANDING PAGE ========== -->
+<div class="landing-appbar" id="landing-appbar">
+    <button type="button" class="lab-menu" onclick="openSettings()" title="Menu" aria-label="Menu">☰</button>
+    <div class="lab-title">DEEP INTERIORS</div>
+</div>
 <div id="landing-page">
     <img src="" alt="Deep Interiors & Projects" class="landing-logo" id="landing-logo-img">
-    <h1 class="landing-company">DEEP INTERIORS & PROJECTS</h1>
+    <h1 class="landing-company">DEEP INTERIORS &amp; PROJECTS</h1>
     <p class="landing-tagline">WE KNOW THE VALUE OF TIME</p>
     <div class="landing-details" id="landing-details">
-        16, Sakar Bunglows, Opp : Baroda Express Highway, CTM Road, Ahmedabad - 380026.<br>
-        ☎ 9924007520 | 9016972088 &nbsp; ✉ deepinteriorsandprojects@gmail.com<br>
-        GST: 24AARFD7655F1Z5 &nbsp; Udyam: UDYAM-GUJ-01-0368572
+        <div class="ld-line"><span class="ld-ico">🏢</span><span class="ld-txt" id="ld-address">16, Sakar Bunglows, Opp : Baroda Express Highway, CTM Road, Ahmedabad - 380026.</span></div>
+        <div class="ld-line"><span class="ld-ico">📞</span><span class="ld-txt" id="ld-phones">9924007520 | 9016972088</span></div>
+        <div class="ld-line"><span class="ld-ico">✉️</span><span class="ld-txt" id="ld-email">deepinteriorsandprojects@gmail.com</span></div>
+        <div class="ld-line"><span class="ld-ico"></span><span class="ld-txt" id="ld-gst">GST: 24AARFD7655F1Z5</span></div>
+        <div class="ld-line"><span class="ld-ico"></span><span class="ld-txt" id="ld-udyam">Udyam: UDYAM-GUJ-01-0368572</span></div>
     </div>
     <div class="landing-btns">
         <button type="button" class="landing-btn landing-btn-quot" onclick="openDocument('quotation')">
@@ -1269,7 +1166,7 @@ input,select{
             QUOTATION
         </button>
         <button type="button" class="landing-btn landing-btn-proforma" onclick="openDocument('proforma')">
-            <span class="landing-btn-icon">🧾</span>
+            <span class="landing-btn-icon">📄</span>
             PROFORMA INVOICE
         </button>
     </div>
@@ -1438,10 +1335,10 @@ input,select{
 <div id="reference-print"></div>
 
 <div class="no-print" id="entry-action-bar" style="display:none;">
-    <button type="button" class="btn btn-blue" style="font-size:18px;padding:15px 30px;" onclick="saveAndNextBill()">💾 Save &amp; Next</button>
-    <button type="button" class="btn" style="background:#6a4fb6;font-size:18px;padding:15px 30px;" onclick="openSaleRegister()">📒 Register</button>
-    <button type="button" class="btn btn-wa" style="font-size:18px;padding:15px 30px;" onclick="sendViaWhatsAppPDF()">🟢 WhatsApp PDF</button>
-    <button type="button" class="btn btn-grey" style="font-size:16px;padding:12px 20px;" onclick="goToLanding()">← Home</button>
+    <button type="button" class="btn btn-blue" onclick="saveAndNextBill()"><span style="font-size:18px;line-height:1;">💾</span>Save</button>
+    <button type="button" class="btn" style="background:#6a4fb6;" onclick="openSaleRegister()"><span style="font-size:18px;line-height:1;">📒</span>Register</button>
+    <button type="button" class="btn btn-wa" onclick="sendViaWhatsAppPDF()"><span style="font-size:18px;line-height:1;">🟢</span>WhatsApp</button>
+    <button type="button" class="btn btn-grey" onclick="goToLanding()"><span style="font-size:18px;line-height:1;">←</span>Home</button>
     <p class="screen-credit">Built by Rupadhar</p>
 </div>
 
@@ -1495,13 +1392,13 @@ if(typeof qrcode==="function"){ window.qrcode = qrcode; }
 <div id="settings-overlay" class="modal-overlay" style="display:none;">
     <div class="modal-box" style="max-width:520px;">
         <div class="modal-header">
-            <h2>⚙️ Settings</h2>
-            <button type="button" class="btn btn-danger" style="padding:8px 14px;font-size:14px;margin:0;" onclick="closeSettings()">✕ Close</button>
+            <h2><span style="color:#bf8f00;">◆</span> DEEP INTERIORS</h2>
+            <button type="button" class="btn btn-danger set-close-x" style="padding:8px 14px;font-size:14px;margin:0;" onclick="closeSettings()">✕</button>
         </div>
         <div class="modal-body">
 
-            <div class="set-acc open" id="acc-company">
-                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-company')">1. Company Details <span class="chev">▼</span></button>
+            <div class="set-acc" id="acc-company">
+                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-company')"><span class="set-ico">🏢</span><span class="set-head-text"><span class="set-head-title">Company Details</span><span class="set-head-sub">Manage business name, address, tax IDs</span></span><span class="chev">▼</span></button>
                 <div class="set-acc-body">
                     <p class="set-fixed-note">Company name fixed — change allowed nahi</p>
                     <label>Company Name</label>
@@ -1520,7 +1417,7 @@ if(typeof qrcode==="function"){ window.qrcode = qrcode; }
             </div>
 
             <div class="set-acc" id="acc-contact">
-                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-contact')">2. Contact Details <span class="chev">▼</span></button>
+                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-contact')"><span class="set-ico">📞</span><span class="set-head-text"><span class="set-head-title">Contact Details</span><span class="set-head-sub">Manage contact numbers</span></span><span class="chev">▼</span></button>
                 <div class="set-acc-body">
                     <label>Mobile 1 (Master)</label>
                     <input type="text" id="set-phone1" value="9924007520">
@@ -1530,7 +1427,7 @@ if(typeof qrcode==="function"){ window.qrcode = qrcode; }
             </div>
 
             <div class="set-acc" id="acc-bank">
-                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-bank')">3. Bank Details <span class="chev">▼</span></button>
+                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-bank')"><span class="set-ico">🏦</span><span class="set-head-text"><span class="set-head-title">Bank Details</span><span class="set-head-sub">Manage account, IFSC, UPI</span></span><span class="chev">▼</span></button>
                 <div class="set-acc-body">
                     <label>Bank / Branch</label>
                     <input type="text" id="set-branch" value="Kotak Mahindra Bank">
@@ -1544,7 +1441,7 @@ if(typeof qrcode==="function"){ window.qrcode = qrcode; }
             </div>
 
             <div class="set-acc" id="acc-fy">
-                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-fy')">4. Financial Year <span class="chev">▼</span></button>
+                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-fy')"><span class="set-ico">📅</span><span class="set-head-text"><span class="set-head-title">Financial Year</span><span class="set-head-sub">Manage financial year</span></span><span class="chev">▼</span></button>
                 <div class="set-acc-body">
                     <label>F.Y. (e.g. 2026-27)</label>
                     <input type="text" id="set-fy" placeholder="2026-27">
@@ -1553,7 +1450,7 @@ if(typeof qrcode==="function"){ window.qrcode = qrcode; }
             </div>
 
             <div class="set-acc" id="acc-terms">
-                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-terms')">5. Terms &amp; Conditions <span class="chev">▼</span></button>
+                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-terms')"><span class="set-ico">📄</span><span class="set-head-text"><span class="set-head-title">Terms &amp; Conditions</span><span class="set-head-sub">Manage Terms &amp; Conditions</span></span><span class="chev">▼</span></button>
                 <div class="set-acc-body">
                     <p class="set-fixed-note">Master T&amp;C — naye Quot/Proforma yahi se aayenge. Document-level T&amp;C alag edit ho sakta hai.</p>
                     <textarea id="set-terms" style="min-height:120px;">Rates quoted are based on current material & labour costs.
@@ -1566,7 +1463,7 @@ E. & O.E.</textarea>
             </div>
 
             <div class="set-acc" id="acc-lock">
-                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-lock')">6. App Lock <span class="chev">▼</span></button>
+                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-lock')"><span class="set-ico">🔒</span><span class="set-head-text"><span class="set-head-title">App Lock</span><span class="set-head-sub" id="set-lock-sub">Set login to enable lock</span></span><span class="chev">▼</span></button>
                 <div class="set-acc-body">
                     <label>Login ID (always visible)</label>
                     <input type="text" id="set-login-id" placeholder="e.g. admin" autocomplete="off">
@@ -1585,7 +1482,7 @@ E. & O.E.</textarea>
             </div>
 
             <div class="set-acc" id="acc-backup">
-                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-backup')">7. Data Backup <span class="chev">▼</span></button>
+                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-backup')"><span class="set-ico">💾</span><span class="set-head-text"><span class="set-head-title">Data Backup</span><span class="set-head-sub">Export / Import all data</span></span><span class="chev">▼</span></button>
                 <div class="set-acc-body">
                     <p class="set-fixed-note"><b>Data location:</b> <span id="set-data-path">This device (IndexedDB)</span></p>
                     <button type="button" class="btn" style="width:100%;margin:0 0 8px 0;background:#217346;" onclick="exportAllDataBackup()">📤 Export All Data (.json)</button>
@@ -1594,8 +1491,8 @@ E. & O.E.</textarea>
                 </div>
             </div>
 
-            <div class="set-acc" id="acc-danger">
-                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-danger')" style="color:#c0392b;">8. Reset (Danger Zone) <span class="chev">▼</span></button>
+            <div class="set-acc danger-acc" id="acc-danger">
+                <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-danger')"><span class="set-ico">⚠️</span><span class="set-head-text"><span class="set-head-title">Reset (Danger Zone)</span><span class="set-head-sub">Confirm with master mobile required</span></span><span class="chev">▼</span></button>
                 <div class="set-acc-body">
                     <p class="set-fixed-note">Erase All Data ke liye <b>master mobile</b> (Contact Details) enter karna hoga.</p>
                     <button type="button" class="btn btn-danger" style="width:100%;margin:0;" onclick="eraseAllSalesData()">🗑️ Erase All Data</button>
@@ -1606,8 +1503,8 @@ E. & O.E.</textarea>
             <p class="screen-credit" style="margin-top:12px;">Built by Rupadhar</p>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-grey" onclick="closeSettings()">Cancel</button>
-            <button type="button" class="btn" onclick="saveSettings()">💾 Save Settings</button>
+            <button type="button" class="btn btn-cancel-settings" onclick="closeSettings()">Cancel</button>
+            <button type="button" class="btn btn-save-settings" onclick="saveSettings()">💾 Save Settings</button>
         </div>
     </div>
 </div>
@@ -1618,29 +1515,31 @@ E. & O.E.</textarea>
         <div class="register-header">
             <h2>📒 Register</h2>
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-                <button type="button" class="btn" style="padding:8px 12px;font-size:13px;margin:0;background:#217346;" onclick="exportRegisterExcel()">📊 Excel</button>
-                <button type="button" class="btn" style="padding:8px 12px;font-size:13px;margin:0;background:#555;" onclick="showRegisterAnalysis()">📊 Analysis</button>
-                <button type="button" class="btn btn-danger" style="padding:8px 14px;font-size:14px;margin:0;" onclick="closeSaleRegister()">✕</button>
+                <button type="button" class="btn" style="padding:8px 12px;font-size:13px;margin:0;background:#217346;border-radius:8px;" onclick="exportRegisterExcel()">📊 Excel</button>
+                <button type="button" class="btn btn-danger" style="padding:8px 12px;font-size:14px;margin:0;border-radius:8px;" onclick="closeSaleRegister()">✕</button>
             </div>
         </div>
+        <div class="reg-tabs" id="reg-tabs">
+            <button type="button" class="reg-dt-btn active" data-doctype="mix" onclick="setRegisterDocType('mix')">Mix</button>
+            <button type="button" class="reg-dt-btn" data-doctype="quotation" onclick="setRegisterDocType('quotation')">Quot</button>
+            <button type="button" class="reg-dt-btn" data-doctype="proforma" onclick="setRegisterDocType('proforma')">PI</button>
+        </div>
         <div class="register-ribbon-wrap" id="register-action-ribbon">
-            <div class="reg-doctype-col">
-                <button type="button" class="reg-dt-btn active" data-doctype="mix" onclick="setRegisterDocType('mix')">Mix</button>
-                <button type="button" class="reg-dt-btn" data-doctype="quotation" onclick="setRegisterDocType('quotation')">Quot</button>
-                <button type="button" class="reg-dt-btn" data-doctype="proforma" onclick="setRegisterDocType('proforma')">PI</button>
-            </div>
+            <div class="reg-doctype-col"></div>
             <div class="register-filters reg-actions-row">
-                <label class="filter-btn" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
-                    <input type="checkbox" id="reg-select-all" onchange="toggleSelectAllRegister(this.checked)" style="width:auto;margin:0;"> All
+                <button type="button" class="filter-btn" onclick="convertSelectedQuotToProforma()"><span class="ico">📄</span>PI</button>
+                <button type="button" class="filter-btn" onclick="shareSelectedPDFs()"><span class="ico">💬</span>WA</button>
+                <button type="button" class="filter-btn" onclick="showRegisterAnalysis()"><span class="ico">📊</span>Analysis</button>
+                <button type="button" class="filter-btn" onclick="ribbonEditSelected()"><span class="ico">✏️</span>Edit</button>
+                <button type="button" class="filter-btn" onclick="ribbonPrintSelected()"><span class="ico">🖨️</span>Print</button>
+                <button type="button" class="filter-btn" onclick="markSelectedQuotLost()" style="color:#c2185b;"><span class="ico">🗑️</span>X Lost</button>
+                <button type="button" class="filter-btn" onclick="unmarkSelectedQuotLost()"><span class="ico">↩</span>Undo</button>
+                <label class="filter-btn" style="cursor:pointer;">
+                    <input type="checkbox" id="reg-select-all" onchange="toggleSelectAllRegister(this.checked)">
+                    <span>All</span>
                 </label>
-                <button type="button" class="filter-btn" onclick="ribbonEditSelected()">✏️ Edit</button>
-                <button type="button" class="filter-btn" onclick="ribbonPrintSelected()">🖨️ Print</button>
-                <button type="button" class="filter-btn" onclick="shareSelectedPDFs()" style="background:#FDF0E6;border-color:#168c45;color:#168c45;">💬 WA</button>
-                <button type="button" class="filter-btn" onclick="convertSelectedQuotToProforma()" style="background:#e3f2fd;border-color:#1565c0;color:#1565c0;font-weight:700;">🔄 PI</button>
-                <button type="button" class="filter-btn" onclick="markSelectedQuotLost()" style="background:#fce4ec;border-color:#c2185b;color:#c2185b;font-weight:700;">✕ Lost</button>
-                <button type="button" class="filter-btn" onclick="unmarkSelectedQuotLost()" style="background:#f5f5f5;border-color:#666;color:#444;">↩</button>
-                <span id="reg-selected-count" style="font-size:11px;color:#555;font-weight:bold;">0</span>
             </div>
+            <div id="reg-selected-count" style="font-size:11px;color:#888;padding:2px 12px 6px;font-weight:600;">0 selected</div>
         </div>
         <div class="register-filters">
             <button type="button" class="filter-btn active" data-filter="all" onclick="setRegisterFilter('all')">All</button>
@@ -1655,9 +1554,11 @@ E. & O.E.</textarea>
             </div>
         </div>
         <div class="register-summary" id="register-summary">
-            <span>Count: <span id="reg-count">0</span></span>
-            <span>Amount: ₹<span id="reg-total">0.00</span></span>
-            <span id="reg-analysis-mini" style="font-size:12px;color:#666;"></span>
+            <div class="reg-sum-left">
+                <span class="reg-sum-count"><span id="reg-count">0</span></span>
+                <span class="reg-sum-meta" id="reg-analysis-mini"></span>
+            </div>
+            <span class="reg-sum-amt">₹<span id="reg-total">0.00</span></span>
         </div>
         <input type="text" id="register-search" class="register-search" placeholder="Search by name, mobile number, or invoice no...">
         <div class="register-sort-bar" id="register-sort-bar" style="padding:8px 18px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;">
@@ -1699,9 +1600,10 @@ async function openDocument(type){
     const qrWrap = document.getElementById("quot-ref-wrap");
     if(qrWrap) qrWrap.style.display = currentDocType === "proforma" ? "" : "none";
     document.getElementById("landing-page").classList.add("hidden");
+    const lab=document.getElementById("landing-appbar"); if(lab) lab.style.display="none";
     document.getElementById("entry-screen").classList.add("active");
     const actionBar = document.getElementById("entry-action-bar");
-    if(actionBar) actionBar.style.display = "block";
+    if(actionBar){ actionBar.style.display = "flex"; actionBar.classList.add("entry-bar-on"); }
     if(typeof clearBill === "function") await clearBill();
     updateGstMode();
     window.scrollTo({top:0, behavior:"smooth"});
@@ -1893,8 +1795,9 @@ function openTermsEditor(){
 function goToLanding(){
     document.getElementById("entry-screen").classList.remove("active");
     document.getElementById("landing-page").classList.remove("hidden");
+    const lab=document.getElementById("landing-appbar"); if(lab) lab.style.display="";
     const actionBar = document.getElementById("entry-action-bar");
-    if(actionBar) actionBar.style.display = "none";
+    if(actionBar){ actionBar.style.display = "none"; actionBar.classList.remove("entry-bar-on"); }
     editingInvoiceNo = null;
     const hint = document.getElementById("edit-mode-hint");
     if(hint) hint.style.display = "none";
@@ -2378,7 +2281,13 @@ function openSettings(){
     const hint = document.getElementById("set-recovery-hint");
     if(hint) hint.textContent = s.phone1 || "—";
     const pathEl = document.getElementById("set-data-path");
-    if(pathEl) pathEl.textContent = "This device · " + (location.origin || "file") + " · IndexedDB: devLaxmiElectricDB";
+    if(pathEl) pathEl.textContent = "This device · " + (location.origin || "file") + " · IndexedDB";
+    document.querySelectorAll(".set-acc").forEach(a => a.classList.remove("open"));
+    const lockSub = document.getElementById("set-lock-sub");
+    if(lockSub){
+        const on = !!(s.loginId && (s.passHash || s.loginPass));
+        lockSub.textContent = on ? "App lock is enabled" : "Set login to enable lock";
+    }
     document.getElementById("settings-overlay").style.display="flex";
 }
 function closeSettings(){
@@ -3477,7 +3386,8 @@ function applyRegisterFilter(){
         const pn = all.filter(i => getDocTypeOf(i)==="proforma" && !i.cancelled).length;
         const pending = all.filter(i => getDocTypeOf(i)==="quotation" && !i.cancelled && !i.locked && !i.convertedTo && !i.lost).length;
         const lostN = all.filter(i => getDocTypeOf(i)==="quotation" && !i.cancelled && i.lost).length;
-        mini.textContent = " | Q: " + qn + " · P: " + pn + " · Pending: " + pending + (lostN ? " · Lost: " + lostN : "");
+        const cancelledN = all.filter(i => i.cancelled).length;
+        mini.innerHTML = (cancelledN ? ("✕ "+cancelledN+" cancelled  ") : "") + (pending ? ("📁 "+pending+" Pending") : "");
     }
     renderRegisterList(list);
 }
@@ -3545,9 +3455,10 @@ async function loadInvoiceToForm(invoiceNo){
     const qrWrap = document.getElementById("quot-ref-wrap");
     if(qrWrap) qrWrap.style.display = currentDocType === "proforma" ? "" : "none";
     document.getElementById("landing-page").classList.add("hidden");
+    const lab=document.getElementById("landing-appbar"); if(lab) lab.style.display="none";
     document.getElementById("entry-screen").classList.add("active");
     const actionBar = document.getElementById("entry-action-bar");
-    if(actionBar) actionBar.style.display = "block";
+    if(actionBar){ actionBar.style.display = "flex"; actionBar.classList.add("entry-bar-on"); }
     document.getElementById("bill-number").value=inv.invoiceNo;
     document.getElementById("bill-date").value=inv.date||"";
     const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||""; };
@@ -4192,17 +4103,20 @@ window.addEventListener("load",async ()=>{
     currentFY=s.fy||detectCurrentFY();
     applyScreenCompanyDetails(s);
     // Update landing details from settings
-    const ld = document.getElementById("landing-details");
-    if(ld){
-        const phones=[];
-        if(s.phone1) phones.push(s.phone1);
-        if(s.phone2) phones.push(s.phone2);
-        ld.innerHTML = escapeHtml(s.address||"") + "<br>" +
-            "☎ " + escapeHtml(phones.join(" | ")) +
-            (s.email ? " &nbsp; ✉ " + escapeHtml(s.email) : "") + "<br>" +
-            (s.gst ? "GST: " + escapeHtml(s.gst) + " &nbsp; " : "") +
-            (s.udyam ? "Udyam: " + escapeHtml(s.udyam) : "");
-    }
+    const phones=[];
+    if(s.phone1) phones.push(s.phone1);
+    if(s.phone2) phones.push(s.phone2);
+    const setTxt = (id, val) => { const el=document.getElementById(id); if(el) el.textContent = val || ""; };
+    setTxt("ld-address", s.address || "");
+    setTxt("ld-phones", phones.join(" | "));
+    setTxt("ld-email", s.email || "");
+    setTxt("ld-gst", s.gst ? ("GST: " + s.gst) : "");
+    setTxt("ld-udyam", s.udyam ? ("Udyam: " + s.udyam) : "");
+    ["ld-email","ld-gst","ld-udyam","ld-phones","ld-address"].forEach(id=>{
+        const el=document.getElementById(id); if(!el) return;
+        const line=el.closest(".ld-line");
+        if(line) line.style.display = (el.textContent||"").trim() ? "" : "none";
+    });
 
     loadSequence();
     await recomputeSequenceForFY(currentFY);
