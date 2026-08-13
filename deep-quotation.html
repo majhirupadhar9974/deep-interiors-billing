@@ -109,18 +109,46 @@ async function doLogin() {
   }
 }
 
+let invoicesUnsub = null;
+
+function startRealtimeInvoices() {
+  if (invoicesUnsub) return; // already listening
+  invoicesUnsub = db.collection("invoices").onSnapshot((snap) => {
+    const list = [];
+    snap.forEach(doc => list.push(doc.data()));
+    allInvoicesCache = list;
+    console.log("Realtime invoices updated:", list.length);
+    // Refresh register if open
+    if (typeof applyRegisterFilter === "function") {
+      try { applyRegisterFilter(); } catch(e) {}
+    }
+  }, (err) => {
+    console.error("Realtime listener error:", err);
+  });
+}
+
 function onFirebaseReady() {
   const btn = document.getElementById("logout-btn");
   if (btn) btn.style.display = "block";
   console.log("Firebase ready - user logged in");
+  startRealtimeInvoices();
+  // Load initial data into cache
+  if (typeof dbGetAllInvoices === "function") {
+    dbGetAllInvoices().then(list => {
+      allInvoicesCache = list || [];
+      console.log("Initial invoices loaded:", allInvoicesCache.length);
+    });
+  }
 }
 
 async function doLogout() {
   try {
+    if (invoicesUnsub) { invoicesUnsub(); invoicesUnsub = null; }
     await auth.signOut();
   } catch (e) {}
   localStorage.removeItem("fb_login_time");
   if (sessionTimer) clearTimeout(sessionTimer);
+  allInvoicesCache = [];
   showLoginScreen();
 }
 
@@ -2237,45 +2265,41 @@ async function dbGetCustomer(phone){
     }catch(e){return null;}
 }
 
-async function dbSaveCustomer(record){
-    if(!record.phone)return;
+async async function dbSaveCustomer(record){
+    if(!record || !record.phone) return;
     try{
-        const db=await openDB();
-        const tx=db.transaction("customers","readwrite");
-        tx.objectStore("customers").put(record);
-    }catch(e){}
+        await db.collection("customers").doc(String(record.phone)).set(record, { merge: true });
+    }catch(e){ console.error("dbSaveCustomer error", e); }
 }
 
 async function dbSaveInvoice(record){
     try{
-        const db=await openDB();
-        const tx=db.transaction("invoices","readwrite");
-        tx.objectStore("invoices").put(record);
-    }catch(e){}
+        if(!record || !record.invoiceNo) return;
+        // Save to Firestore (real-time shared)
+        await db.collection("invoices").doc(String(record.invoiceNo)).set(record, { merge: true });
+        // Also keep local cache in sync
+        if(typeof allInvoicesCache !== "undefined"){
+            const idx = allInvoicesCache.findIndex(x => x.invoiceNo === record.invoiceNo);
+            if(idx >= 0) allInvoicesCache[idx] = record;
+            else allInvoicesCache.push(record);
+        }
+    }catch(e){ console.error("dbSaveInvoice error", e); }
 }
 
 async function dbGetAllInvoices(){
     try{
-        const db=await openDB();
-        return await new Promise((resolve)=>{
-            const tx=db.transaction("invoices","readonly");
-            const req=tx.objectStore("invoices").getAll();
-            req.onsuccess=()=>resolve(req.result||[]);
-            req.onerror=()=>resolve([]);
-        });
-    }catch(e){return [];}
+        const snap = await db.collection("invoices").get();
+        const list = [];
+        snap.forEach(doc => list.push(doc.data()));
+        return list;
+    }catch(e){ console.error("dbGetAllInvoices error", e); return []; }
 }
 
 async function dbInvoiceExists(invoiceNo){
     try{
-        const db=await openDB();
-        return await new Promise((resolve)=>{
-            const tx=db.transaction("invoices","readonly");
-            const req=tx.objectStore("invoices").get(invoiceNo);
-            req.onsuccess=()=>resolve(!!req.result);
-            req.onerror=()=>resolve(false);
-        });
-    }catch(e){return false;}
+        const doc = await db.collection("invoices").doc(String(invoiceNo)).get();
+        return doc.exists;
+    }catch(e){ return false; }
 }
 
 function gval(id){ const el=document.getElementById(id); return el ? (el.value||"").trim() : ""; }
