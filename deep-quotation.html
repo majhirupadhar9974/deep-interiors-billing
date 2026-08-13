@@ -2267,6 +2267,12 @@ async function dbSaveCustomer(record){
     }catch(e){ console.error("dbSaveCustomer error", e); }
 }
 
+
+function fsDocId(invoiceNo){
+    // Firestore doc IDs cannot contain "/"
+    return String(invoiceNo || "").replace(/\//g, "_");
+}
+
 async function dbSaveInvoice(record){
     try{
         if(!record || !record.invoiceNo) {
@@ -2274,7 +2280,7 @@ async function dbSaveInvoice(record){
             return;
         }
         console.log("Saving invoice to Firestore:", record.invoiceNo);
-        await fs.collection("invoices").doc(String(record.invoiceNo)).set(JSON.parse(JSON.stringify(record)), { merge: true });
+        await fs.collection("invoices").doc(fsDocId(record.invoiceNo)).set(JSON.parse(JSON.stringify(record)), { merge: true });
         if(typeof allInvoicesCache !== "undefined" && Array.isArray(allInvoicesCache)){
             const idx = allInvoicesCache.findIndex(x => x.invoiceNo === record.invoiceNo);
             if(idx >= 0) allInvoicesCache[idx] = record;
@@ -2298,7 +2304,7 @@ async function dbGetAllInvoices(){
 
 async function dbInvoiceExists(invoiceNo){
     try{
-        const doc = await fs.collection("invoices").doc(String(invoiceNo)).get();
+        const doc = await fs.collection("invoices").doc(fsDocId(invoiceNo)).get();
         return doc.exists;
     }catch(e){ return false; }
 }
@@ -2352,7 +2358,7 @@ async function saveCurrentInvoiceToRegister(){
     let existing = (allInvoicesCache || []).find(i => i.invoiceNo === invoiceNo) || null;
     if(!existing){
         try{
-            const doc = await fs.collection("invoices").doc(String(invoiceNo)).get();
+            const doc = await fs.collection("invoices").doc(fsDocId(invoiceNo)).get();
             existing = doc.exists ? doc.data() : null;
         }catch(e){ existing = null; }
     }
