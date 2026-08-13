@@ -2269,16 +2269,22 @@ async function dbSaveCustomer(record){
 
 async function dbSaveInvoice(record){
     try{
-        if(!record || !record.invoiceNo) return;
-        // Save to Firestore (real-time shared)
-        await fs.collection("invoices").doc(String(record.invoiceNo)).set(record, { merge: true });
-        // Also keep local cache in sync
-        if(typeof allInvoicesCache !== "undefined"){
+        if(!record || !record.invoiceNo) {
+            console.warn("dbSaveInvoice: missing invoiceNo", record);
+            return;
+        }
+        console.log("Saving invoice to Firestore:", record.invoiceNo);
+        await fs.collection("invoices").doc(String(record.invoiceNo)).set(JSON.parse(JSON.stringify(record)), { merge: true });
+        if(typeof allInvoicesCache !== "undefined" && Array.isArray(allInvoicesCache)){
             const idx = allInvoicesCache.findIndex(x => x.invoiceNo === record.invoiceNo);
             if(idx >= 0) allInvoicesCache[idx] = record;
             else allInvoicesCache.push(record);
         }
-    }catch(e){ console.error("dbSaveInvoice error", e); }
+        console.log("Invoice saved successfully:", record.invoiceNo);
+    }catch(e){
+        console.error("dbSaveInvoice error", e);
+        alert("Save failed: " + (e.message || e));
+    }
 }
 
 async function dbGetAllInvoices(){
@@ -2346,13 +2352,8 @@ async function saveCurrentInvoiceToRegister(){
     let existing = (allInvoicesCache || []).find(i => i.invoiceNo === invoiceNo) || null;
     if(!existing){
         try{
-            const db = await openDB();
-            existing = await new Promise(resolve => {
-                const tx = db.transaction("invoices","readonly");
-                const req = tx.objectStore("invoices").get(invoiceNo);
-                req.onsuccess = () => resolve(req.result || null);
-                req.onerror = () => resolve(null);
-            });
+            const doc = await fs.collection("invoices").doc(String(invoiceNo)).get();
+            existing = doc.exists ? doc.data() : null;
         }catch(e){ existing = null; }
     }
     const cancelledFlag = (typeof window._forceCancelled === "boolean")
