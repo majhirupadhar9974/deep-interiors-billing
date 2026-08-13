@@ -321,8 +321,97 @@ input,select{
     .party-box input,.party-box textarea{font-size:16px;min-height:44px}
     .party-3col{grid-template-columns:1fr 1fr}
     .party-3col > div:last-child{grid-column:1 / -1}
-    .items-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1px solid #e0d8c8}
-    .items-table{min-width:640px}
+    /* ===== MOBILE CARD LAYOUT FOR LINE ITEMS ===== */
+
+    /* Extra mobile form polish */
+    .party-box label{font-size:12px !important}
+    .party-box input, .party-box textarea, .doc-meta-cell input{
+        font-size:15px !important;
+        min-height:44px;
+    }
+    .party-head{font-size:14px;padding:10px 12px}
+    .main-title{margin-bottom:16px}
+    .doc-meta-row{margin-bottom:16px}
+    .party-grid{gap:16px;margin-bottom:18px}
+
+    .items-table-wrap{overflow:visible;border:none;border-radius:0}
+    .items-table{min-width:0;width:100%;border:none}
+    .items-table thead{display:none}
+    .items-table tbody{display:flex;flex-direction:column;gap:12px}
+    .items-table tr{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:8px 10px;
+        background:#fff;
+        border:1px solid #e0d8c8;
+        border-radius:12px;
+        padding:12px;
+        box-shadow:0 2px 8px rgba(0,0,0,.06);
+        position:relative;
+    }
+    .items-table td{
+        border:none !important;
+        padding:0 !important;
+        font-size:14px;
+        display:flex;
+        flex-direction:column;
+        gap:3px;
+    }
+    /* Sr number badge */
+    .items-table td:nth-child(1){
+        position:absolute;
+        top:10px; right:12px;
+        width:auto;
+        background:#bf8f00;
+        color:#fff;
+        font-weight:800;
+        font-size:12px;
+        padding:2px 8px !important;
+        border-radius:20px;
+        min-width:28px;
+        text-align:center;
+        justify-content:center;
+    }
+    .items-table td:nth-child(1)::before{content:none}
+    /* GST */
+    .items-table td:nth-child(2){grid-column:1}
+    .items-table td:nth-child(2)::before{content:"GST %";font-size:11px;font-weight:700;color:#666}
+    /* Particulars + Description — full width, keep description */
+    .items-table td:nth-child(3){
+        grid-column:1 / -1;
+        order:-1;
+        padding-right:40px !important;
+    }
+    .items-table td:nth-child(3)::before{content:"Particulars + Description";font-size:11px;font-weight:700;color:#666;margin-bottom:2px}
+    .items-table .item-name{font-size:15px !important;font-weight:700;min-height:42px;padding:8px 10px}
+    .items-table .item-desc{font-size:13px !important;min-height:52px;margin-top:4px}
+    /* Unit */
+    .items-table td:nth-child(4)::before{content:"Unit";font-size:11px;font-weight:700;color:#666}
+    /* Qty */
+    .items-table td:nth-child(5)::before{content:"Qty";font-size:11px;font-weight:700;color:#666}
+    /* Rate */
+    .items-table td:nth-child(6)::before{content:"Rate (₹)";font-size:11px;font-weight:700;color:#666}
+    /* Amount */
+    .items-table td:nth-child(7){
+        grid-column:1 / -1;
+        background:#faf6eb;
+        border-radius:8px;
+        padding:8px 10px !important;
+        margin-top:4px;
+        flex-direction:row;
+        justify-content:space-between;
+        align-items:center;
+    }
+    .items-table td:nth-child(7)::before{content:"Amount (₹)";font-size:12px;font-weight:700;color:#555}
+    .items-table .item-total{background:transparent;font-size:16px;color:#2E1501}
+    .items-table select,.items-table input[type=number],.items-table input[type=text]{
+        font-size:15px !important;
+        min-height:42px;
+        padding:8px 10px;
+        border-radius:8px;
+        border:1px solid #ccc;
+    }
+    .items-table textarea{font-size:13px !important;border-radius:8px;border:1px solid #ccc;padding:8px}
     .calc-table{width:100%}
     .btn-action-row{display:flex;flex-wrap:wrap;gap:8px}
     .btn-action-row .btn{flex:1 1 auto;min-width:30%;margin:0;font-size:14px!important;padding:12px 10px!important;border-radius:10px}
@@ -454,11 +543,11 @@ input,select{
 
 .register-overlay{
     position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;
-    display:flex;align-items:center;justify-content:center;padding:16px;
+    display:flex;align-items:stretch;justify-content:stretch;padding:0;
 }
 .register-box{
-    background:#fff;width:100%;max-width:760px;max-height:90vh;border-radius:14px;
-    display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.18);
+    background:#fff;width:100%;max-width:100%;max-height:100vh;height:100%;border-radius:0;
+    display:flex;flex-direction:column;overflow:hidden;box-shadow:none;
 }
 .register-header{
     display:flex;align-items:center;justify-content:space-between;
@@ -605,7 +694,7 @@ input,select{
         gap:8px;
     }
     .register-header h2{font-size:16px;}
-    .register-box{max-height:94vh;}
+    .register-box{max-height:100vh;height:100%;}
 }
 .register-item-detail{
     display:none;
@@ -1089,6 +1178,78 @@ input,select{
 }
 .ref-sign-label{font-weight:700;font-size:10.5px}
 
+
+/* ===== Register declutter: compact actions + More menu ===== */
+.reg-actions-compact{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    justify-content:flex-start;
+    padding:8px 10px;
+}
+.reg-actions-compact .filter-btn{
+    flex:0 0 auto;
+    min-width:56px;
+    padding:8px 6px;
+}
+.reg-more-menu{
+    position:absolute;
+    right:12px;
+    top:auto;
+    margin-top:4px;
+    background:#fff;
+    border:1px solid #e0d8c8;
+    border-radius:12px;
+    box-shadow:0 8px 28px rgba(0,0,0,.18);
+    z-index:200;
+    min-width:200px;
+    padding:6px;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+.reg-more-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    padding:12px 14px;
+    border:none;
+    background:transparent;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+    color:#333;
+    cursor:pointer;
+    text-align:left;
+}
+.reg-more-item:hover, .reg-more-item:active{
+    background:#f5f0e6;
+}
+.reg-more-item .ico{font-size:18px;width:24px;text-align:center}
+.register-ribbon-wrap{position:relative}
+
+@media screen and (max-width:700px){
+    .reg-actions-compact .filter-btn{
+        flex:1 1 18%;
+        min-width:0;
+        font-size:12px;
+        padding:10px 4px;
+    }
+    .reg-more-menu{
+        position:fixed;
+        left:12px;
+        right:12px;
+        bottom:calc(12px + env(safe-area-inset-bottom,0px));
+        top:auto;
+        margin:0;
+        border-radius:16px;
+        padding:10px;
+        box-shadow:0 -4px 30px rgba(0,0,0,.22);
+    }
+    .reg-more-item{padding:14px 16px;font-size:15px;min-height:48px}
+}
+
 @media print{
     .landing-appbar{display:none!important}
     @page{size:A4;margin:0}
@@ -1514,9 +1675,8 @@ E. & O.E.</textarea>
     <div class="register-box">
         <div class="register-header">
             <h2>📒 Register</h2>
-            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-                <button type="button" class="btn" style="padding:8px 12px;font-size:13px;margin:0;background:#217346;border-radius:8px;" onclick="exportRegisterExcel()">📊 Excel</button>
-                <button type="button" class="btn btn-danger" style="padding:8px 12px;font-size:14px;margin:0;border-radius:8px;" onclick="closeSaleRegister()">✕</button>
+            <div style="display:flex;gap:4px;align-items:center;justify-content:flex-end;">
+                <button type="button" class="btn btn-danger" style="padding:3px 8px;font-size:12px;margin:0;border-radius:4px;line-height:1.1;min-width:28px;min-height:26px;" onclick="closeSaleRegister()">✕</button>
             </div>
         </div>
         <div class="reg-tabs" id="reg-tabs">
@@ -1526,18 +1686,32 @@ E. & O.E.</textarea>
         </div>
         <div class="register-ribbon-wrap" id="register-action-ribbon">
             <div class="reg-doctype-col"></div>
-            <div class="register-filters reg-actions-row">
-                <button type="button" class="filter-btn" onclick="convertSelectedQuotToProforma()"><span class="ico">📄</span>PI</button>
-                <button type="button" class="filter-btn" onclick="shareSelectedPDFs()"><span class="ico">💬</span>WA</button>
-                <button type="button" class="filter-btn" onclick="showRegisterAnalysis()"><span class="ico">📊</span>Analysis</button>
+            <div class="register-filters reg-actions-row reg-actions-compact">
+                <!-- Primary visible actions -->
                 <button type="button" class="filter-btn" onclick="ribbonEditSelected()"><span class="ico">✏️</span>Edit</button>
                 <button type="button" class="filter-btn" onclick="ribbonPrintSelected()"><span class="ico">🖨️</span>Print</button>
-                <button type="button" class="filter-btn" onclick="markSelectedQuotLost()" style="color:#c2185b;"><span class="ico">🗑️</span>X Lost</button>
-                <button type="button" class="filter-btn" onclick="unmarkSelectedQuotLost()"><span class="ico">↩</span>Undo</button>
+                <button type="button" class="filter-btn" onclick="shareSelectedPDFs()"><span class="ico">💬</span>WA</button>
                 <label class="filter-btn" style="cursor:pointer;">
                     <input type="checkbox" id="reg-select-all" onchange="toggleSelectAllRegister(this.checked)">
                     <span>All</span>
                 </label>
+                <!-- More menu trigger -->
+                <button type="button" class="filter-btn" id="reg-more-btn" onclick="toggleRegMoreMenu(event)"><span class="ico">⋮</span>More</button>
+            </div>
+            <!-- Hidden more menu (dropdown / bottom sheet style) -->
+            <div id="reg-more-menu" class="reg-more-menu" style="display:none;">
+                <button type="button" class="reg-more-item" onclick="exportRegisterExcel();hideRegMoreMenu()"><span class="ico">📊</span> Export Excel</button>
+                <button type="button" class="reg-more-item" onclick="convertSelectedQuotToProforma();hideRegMoreMenu()"><span class="ico">📄</span> Convert to PI</button>
+                <button type="button" class="reg-more-item" onclick="showRegisterAnalysis();hideRegMoreMenu()"><span class="ico">📊</span> Analysis</button>
+                <button type="button" class="reg-more-item" onclick="markSelectedQuotLost();hideRegMoreMenu()" style="color:#c2185b;"><span class="ico">🗑️</span> Mark Lost</button>
+                <button type="button" class="reg-more-item" onclick="unmarkSelectedQuotLost();hideRegMoreMenu()"><span class="ico">↩</span> Undo Lost</button>
+                <div style="height:1px;background:#eee;margin:6px 8px;"></div>
+                <div style="padding:4px 14px 2px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;">Sort by</div>
+                <button type="button" class="reg-more-item" onclick="setRegisterSort('invoiceNo');hideRegMoreMenu()"><span class="ico">🔢</span> Bill No</button>
+                <button type="button" class="reg-more-item" onclick="setRegisterSort('date');hideRegMoreMenu()"><span class="ico">📅</span> Date</button>
+                <button type="button" class="reg-more-item" onclick="setRegisterSort('customerName');hideRegMoreMenu()"><span class="ico">👤</span> Name</button>
+                <button type="button" class="reg-more-item" onclick="setRegisterSort('total');hideRegMoreMenu()"><span class="ico">💰</span> Amount</button>
+                <button type="button" class="reg-more-item" onclick="setRegisterSort('mobile');hideRegMoreMenu()"><span class="ico">📱</span> Mobile</button>
             </div>
             <div id="reg-selected-count" style="font-size:11px;color:#888;padding:2px 12px 6px;font-weight:600;">0 selected</div>
         </div>
@@ -1553,7 +1727,7 @@ E. & O.E.</textarea>
                 <button type="button" class="filter-btn" onclick="applyCustomFilter()">Apply</button>
             </div>
         </div>
-        <div class="register-summary" id="register-summary">
+        <div class="register-summary" id="register-summary" style="display:none !important;">
             <div class="reg-sum-left">
                 <span class="reg-sum-count"><span id="reg-count">0</span></span>
                 <span class="reg-sum-meta" id="reg-analysis-mini"></span>
@@ -1561,7 +1735,7 @@ E. & O.E.</textarea>
             <span class="reg-sum-amt">₹<span id="reg-total">0.00</span></span>
         </div>
         <input type="text" id="register-search" class="register-search" placeholder="Search by name, mobile number, or invoice no...">
-        <div class="register-sort-bar" id="register-sort-bar" style="padding:8px 18px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;">
+        <div class="register-sort-bar" id="register-sort-bar" style="padding:8px 18px 0;display:none;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;">
             <span style="font-weight:bold;color:#555;">Sort:</span>
             <button type="button" class="filter-btn sort-btn" data-sort="invoiceNo" onclick="setRegisterSort('invoiceNo')">Bill No</button>
             <button type="button" class="filter-btn sort-btn" data-sort="date" onclick="setRegisterSort('date')">Date</button>
@@ -3215,6 +3389,26 @@ async function openSaleRegister(){
     clearRegisterSelection();
     updateRegisterSelectionUI();
 }
+
+function toggleRegMoreMenu(e){
+    if(e) e.stopPropagation();
+    const menu = document.getElementById("reg-more-menu");
+    if(!menu) return;
+    const isOpen = menu.style.display === "flex" || menu.style.display === "block";
+    if(isOpen){
+        menu.style.display = "none";
+    } else {
+        menu.style.display = "flex";
+        setTimeout(()=>{
+            document.addEventListener("click", hideRegMoreMenu, {once:true});
+        }, 10);
+    }
+}
+function hideRegMoreMenu(){
+    const menu = document.getElementById("reg-more-menu");
+    if(menu) menu.style.display = "none";
+}
+
 function closeSaleRegister(){
     document.getElementById("register-overlay").style.display="none";
 }
