@@ -39,14 +39,21 @@ let sessionTimer = null;
 
 function showLoginScreen() {
   const login = document.getElementById("login-screen");
-  if (login) login.style.display = "flex";
-  // Hide main app content
+  if (login) {
+    login.style.display = "flex";
+    login.style.visibility = "visible";
+    login.style.pointerEvents = "auto";
+  }
   document.body.style.overflow = "hidden";
 }
 
 function hideLoginScreen() {
   const login = document.getElementById("login-screen");
-  if (login) login.style.display = "none";
+  if (login) {
+    login.style.display = "none";
+    login.style.visibility = "hidden";
+    login.style.pointerEvents = "none";
+  }
   document.body.style.overflow = "";
 }
 
@@ -83,10 +90,9 @@ async function doLogin() {
   
   try {
     await auth.signInWithEmailAndPassword(email, password);
-    localStorage.setItem("fb_login_time", Date.now());
+    localStorage.setItem("fb_login_time", String(Date.now()));
     startSessionTimer();
     hideLoginScreen();
-    // App ready
     if (typeof onFirebaseReady === "function") onFirebaseReady();
   } catch (e) {
     console.error(e);
@@ -128,17 +134,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Auth state listener
 auth.onAuthStateChanged((user) => {
-  if (user && checkSessionValid()) {
-    hideLoginScreen();
-    startSessionTimer();
-    if (typeof onFirebaseReady === "function") onFirebaseReady();
-  } else {
-    if (user) {
-      // Session expired but still authenticated → force logout
-      doLogout();
-    } else {
-      showLoginScreen();
+  if (user) {
+    // If no login time yet (fresh login), set it
+    if (!localStorage.getItem("fb_login_time")) {
+      localStorage.setItem("fb_login_time", String(Date.now()));
     }
+    if (checkSessionValid()) {
+      hideLoginScreen();
+      startSessionTimer();
+      if (typeof onFirebaseReady === "function") onFirebaseReady();
+    } else {
+      // Session expired
+      doLogout();
+    }
+  } else {
+    showLoginScreen();
   }
 });
 
@@ -1438,7 +1448,7 @@ input,select{
 <body>
 
 <!-- ==================== LOGIN SCREEN ==================== -->
-<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#2E1501 0%,#5A3A1A 50%,#bf8f00 100%);display:flex;align-items:center;justify-content:center;padding:20px;">
+<div id="login-screen" style="display:flex;position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#2E1501 0%,#5A3A1A 50%,#bf8f00 100%);align-items:center;justify-content:center;padding:20px;">
   <div style="background:#fff;border-radius:16px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 12px 40px rgba(0,0,0,.3);text-align:center;">
     <div style="font-size:28px;font-weight:800;color:#2E1501;margin-bottom:4px;">DEEP INTERIORS</div>
     <div style="font-size:13px;color:#bf8f00;font-weight:600;letter-spacing:1px;margin-bottom:24px;">& PROJECTS — Billing Login</div>
