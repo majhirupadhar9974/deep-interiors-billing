@@ -36,6 +36,495 @@
 
 
 
+
+/* ==================== AUTO BACKUP (7-DAY ROTATION) ==================== */
+const AUTO_BACKUP_META_KEY = "di_auto_backup_meta";
+const AUTO_BACKUP_DB = "DeepInteriorsAutoBackup";
+const AUTO_BACKUP_STORE = "daily";
+const AUTO_BACKUP_KEEP_DAYS = 7;
+let autoBackupDirHandle = null;
+
+function getAutoBackupMeta(){
+  try { return JSON.parse(localStorage.getItem(AUTO_BACKUP_META_KEY) || "{}"); } catch(e){ return {}; }
+}
+function setAutoBackupMeta(m){
+  localStorage.setItem(AUTO_BACKUP_META_KEY, JSON.stringify(m || {}));
+}
+
+function openAutoBackupDB(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(AUTO_BACKUP_DB, 1);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(AUTO_BACKUP_STORE)){
+        db.createObjectStore(AUTO_BACKUP_STORE, { keyPath: "date" });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function listAutoBackups(){
+  try{
+    const db = await openAutoBackupDB();
+    return await new Promise((resolve) => {
+      const tx = db.transaction(AUTO_BACKUP_STORE, "readonly");
+      const req = tx.objectStore(AUTO_BACKUP_STORE).getAll();
+      req.onsuccess = () => {
+        const list = (req.result || []).sort((a,b) => (a.date < b.date ? 1 : -1));
+        resolve(list);
+      };
+      req.onerror = () => resolve([]);
+    });
+  }catch(e){ return []; }
+}
+
+async function pruneAutoBackups(){
+  const list = await listAutoBackups();
+  if(list.length <= AUTO_BACKUP_KEEP_DAYS) return;
+  const db = await openAutoBackupDB();
+  const toDelete = list.slice(AUTO_BACKUP_KEEP_DAYS); // older than 7
+  await new Promise((resolve) => {
+    const tx = db.transaction(AUTO_BACKUP_STORE, "readwrite");
+    toDelete.forEach(row => tx.objectStore(AUTO_BACKUP_STORE).delete(row.date));
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+  });
+  // try remove old files from folder
+  if(autoBackupDirHandle){
+    for(const row of toDelete){
+      try{
+        await autoBackupDirHandle.removeEntry(row.fileName || ("Backup_" + row.date + ".json"));
+      }catch(e){}
+    }
+  }
+}
+
+async function buildBackupPayload(){
+  const invoices = (typeof dbGetAllInvoices === "function") ? await dbGetAllInvoices() : (allInvoicesCache || []);
+  let customers = [];
+  try{
+    const snap = await fs.collection("customers").get();
+    snap.forEach(doc => customers.push(doc.data()));
+  }catch(e){}
+  let items = [];
+  try{
+    if(typeof itemMasterCache !== "undefined" && itemMasterCache.length) items = itemMasterCache.slice();
+    else {
+      const snap = await fs.collection("itemMaster").get();
+      snap.forEach(doc => { const d=doc.data(); d.id=doc.id; items.push(d); });
+    }
+  }catch(e){}
+  const s = (typeof getSettings === "function") ? getSettings() : {};
+  return {
+    app: "DeepInteriorsBilling",
+    exportedAt: new Date().toISOString(),
+    settings: s,
+    sequence: typeof currentSequence !== "undefined" ? currentSequence : 1,
+    invoices,
+    customers,
+    itemMaster: items
+  };
+}
+
+function backupFileNameForDate(dateStr, shopName){
+  const company = String(shopName || "Deep_Interiors").replace(/[^\w\-]+/g, "_");
+  return company + "_AutoBackup_" + dateStr + ".json";
+}
+
+async function writeBackupToFolder(fileName, jsonText){
+  if(!autoBackupDirHandle) return false;
+  try{
+    const fh = await autoBackupDirHandle.getFileHandle(fileName, { create: true });
+    const writable = await fh.createWritable();
+    await writable.write(jsonText);
+    await writable.close();
+    return true;
+  }catch(e){
+    console.warn("folder write failed", e);
+    return false;
+  }
+}
+
+async function runAutoBackupNow(manual){
+  const meta = getAutoBackupMeta();
+  if(!meta.enabled && !manual) return { ok: false, reason: "disabled" };
+  try{
+    const today = new Date().toISOString().slice(0, 10);
+    const payload = await buildBackupPayload();
+    const s = payload.settings || {};
+    const fileName = backupFileNameForDate(today, s.shopName);
+    const jsonText = JSON.stringify(payload, null, 2);
+    const row = {
+      date: today,
+      fileName,
+      createdAt: Date.now(),
+      createdLabel: new Date().toLocaleString("en-IN"),
+      invoiceCount: (payload.invoices || []).length,
+      payload // stored locally for restore offline
+    };
+    const db = await openAutoBackupDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(AUTO_BACKUP_STORE, "readwrite");
+      tx.objectStore(AUTO_BACKUP_STORE).put(row);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    await pruneAutoBackups(); // keep only 7 days; day 8 replaces oldest
+    meta.lastBackupDate = today;
+    meta.lastBackupLabel = row.createdLabel;
+    meta.lastFileName = fileName;
+    setAutoBackupMeta(meta);
+    const phoneResult = await offerPhoneFileSave(fileName, jsonText, true);
+    const wrote = !!(phoneResult && phoneResult.ok);
+    meta.lastFolderWrite = wrote;
+    setAutoBackupMeta(meta);
+    refreshAutoBackupUI();
+    meta.pending = false;
+    meta.lastError = "";
+    setAutoBackupMeta(meta);
+    if(manual){
+      try{
+        const blob = new Blob([jsonText], {type: "application/json"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+      }catch(e){}
+      await appAlert(
+        "Backup saved for " + today + ".\nDocuments: " + row.invoiceCount +
+        "\n\nA JSON file was also offered to your phone Downloads/Files (if allowed).\nLast 7 daily backups stay on this phone.",
+        "Backup Complete"
+      );
+    }
+    return { ok: true, date: today, fileName };
+  }catch(e){
+    console.error(e);
+    const meta = getAutoBackupMeta();
+    meta.pending = true;
+    meta.lastError = String(e.message || e);
+    setAutoBackupMeta(meta);
+    refreshAutoBackupUI();
+    if(manual) await appAlert("Backup failed: " + (e.message || e) + "\n\nWill retry automatically next time the app opens with internet.", "Error");
+    return { ok: false, error: e };
+  }
+}
+
+window.addEventListener("online", function(){
+  try{
+    const meta = getAutoBackupMeta();
+    if(meta.enabled && meta.pending) ensureDailyAutoBackup();
+  }catch(e){}
+});
+document.addEventListener("visibilitychange", function(){
+  if(document.visibilityState === "visible"){
+    try{ ensureDailyAutoBackup(); }catch(e){}
+  }
+});
+
+async function ensureDailyAutoBackup(){
+  const meta = getAutoBackupMeta();
+  if(!meta.enabled) return;
+  const today = new Date().toISOString().slice(0, 10);
+  // Retry if pending (failed earlier) OR no backup for today yet
+  if(meta.lastBackupDate === today && !meta.pending) return;
+  const result = await runAutoBackupNow(false);
+  if(result && result.ok){
+    meta.pending = false;
+    setAutoBackupMeta(meta);
+  } else {
+    meta.pending = true;
+    setAutoBackupMeta(meta);
+  }
+}
+
+async function downloadLatestAutoBackup(){
+  const list = (await listAutoBackups()).filter(r => r.date && r.date !== "__dir__");
+  if(!list.length){
+    await appAlert("No auto-backup found on this phone yet. Tap Backup now first.", "No Backup");
+    return;
+  }
+  const latest = list[0];
+  const payload = latest.payload || await buildBackupPayload();
+  const fileName = latest.fileName || backupFileNameForDate(latest.date, (payload.settings||{}).shopName);
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  await appAlert("Downloading:\\n" + fileName + "\\n\\nCheck your phone Downloads or Files app.", "Download");
+}
+
+
+async function setPhoneBackupLocation(){
+  // Prefer real folder (Chrome Android / desktop). Else mark "Downloads mode".
+  if(window.showDirectoryPicker){
+    const ok = await appConfirm(
+      "Choose a folder on your phone storage where daily backup JSON files will be saved automatically.\\n\\nYou may see a system permission popup — please Allow.",
+      "Phone Save Location",
+      { okLabel: "Choose Folder", cancelLabel: "Use Downloads instead" }
+    );
+    if(ok){
+      await chooseAutoBackupFolder();
+      const meta = getAutoBackupMeta();
+      if(autoBackupDirHandle){
+        meta.phoneMode = "folder";
+        meta.phonePathLabel = "Folder: " + (autoBackupDirHandle.name || meta.folderName || "selected");
+        setAutoBackupMeta(meta);
+        refreshAutoBackupUI();
+        await appAlert("Phone save location set.\\nDaily backups will try to write JSON files into this folder automatically.", "Location Saved");
+        return;
+      }
+    }
+  }
+  const ok2 = await appConfirm(
+    "This browser cannot lock a fixed folder path.\\n\\nMode: Phone Downloads/Files\\n\\n• Auto backup still runs daily in the app\\n• When a new daily file is ready, you get a clear button to save it into phone storage (one tap)\\n• You can also use Backup now anytime",
+    "Use Phone Downloads",
+    { okLabel: "Use Downloads mode", cancelLabel: "Cancel" }
+  );
+  if(!ok2) return;
+  const meta = getAutoBackupMeta();
+  meta.phoneMode = "downloads";
+  meta.phonePathLabel = "Phone Downloads / Files (one-tap save when ready)";
+  meta.folderName = "";
+  setAutoBackupMeta(meta);
+  refreshAutoBackupUI();
+  await appAlert("Downloads mode enabled.\\nWhen today\\'s auto backup is ready, use “Save TODAY\\'s backup to phone storage”.", "Ready");
+}
+
+async function offerPhoneFileSave(fileName, jsonText, auto){
+  const meta = getAutoBackupMeta();
+  // 1) Folder handle — fully automatic
+  if(autoBackupDirHandle){
+    const wrote = await writeBackupToFolder(fileName, jsonText);
+    if(wrote){
+      meta.phoneSavePending = false;
+      meta.lastFolderWrite = true;
+      meta.phonePathLabel = "Folder: " + (autoBackupDirHandle.name || meta.folderName || "selected");
+      setAutoBackupMeta(meta);
+      return { mode: "folder", ok: true };
+    }
+  }
+  // 2) Downloads mode — need one user tap on many mobiles (browser security)
+  meta.phoneSavePending = true;
+  meta.pendingPhoneFileName = fileName;
+  meta.lastFolderWrite = false;
+  if(!meta.phonePathLabel) meta.phonePathLabel = "Phone Downloads / Files (one-tap when prompted)";
+  setAutoBackupMeta(meta);
+  showPhoneBackupBanner(true);
+  refreshAutoBackupUI();
+  return { mode: "downloads", ok: false, pending: true };
+}
+
+async function savePendingBackupToPhone(){
+  const meta = getAutoBackupMeta();
+  const list = (await listAutoBackups()).filter(r => r.date && r.date !== "__dir__");
+  const today = new Date().toISOString().slice(0, 10);
+  let row = list.find(r => r.date === today) || list[0];
+  if(!row || !row.payload){
+    await appAlert("No backup payload found. Tap Backup now first.", "No Backup");
+    return;
+  }
+  const fileName = meta.pendingPhoneFileName || row.fileName || backupFileNameForDate(row.date, (row.payload.settings||{}).shopName);
+  const jsonText = JSON.stringify(row.payload, null, 2);
+  // Try folder again first
+  if(autoBackupDirHandle){
+    const wrote = await writeBackupToFolder(fileName, jsonText);
+    if(wrote){
+      meta.phoneSavePending = false;
+      setAutoBackupMeta(meta);
+      showPhoneBackupBanner(false);
+      refreshAutoBackupUI();
+      await appAlert("Saved to your chosen folder:\\n" + fileName, "Saved");
+      return;
+    }
+  }
+  // Force download into phone storage
+  try{
+    const blob = new Blob([jsonText], {type: "application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    meta.phoneSavePending = false;
+    meta.lastPhoneSaveLabel = new Date().toLocaleString("en-IN");
+    setAutoBackupMeta(meta);
+    showPhoneBackupBanner(false);
+    refreshAutoBackupUI();
+    await appAlert("File sent to phone Downloads/Files:\\n" + fileName + "\\n\\nOpen your Files app to confirm.", "Saved to Phone");
+  }catch(e){
+    await appAlert("Could not save to phone: " + (e.message||e), "Error");
+  }
+}
+
+function showPhoneBackupBanner(show){
+  let b = document.getElementById("phone-backup-banner");
+  if(!show){
+    if(b) b.style.display = "none";
+    const btn = document.getElementById("btn-save-pending-phone");
+    if(btn) btn.style.display = "none";
+    return;
+  }
+  const btn = document.getElementById("btn-save-pending-phone");
+  if(btn) btn.style.display = "block";
+  if(!b){
+    b = document.createElement("div");
+    b.id = "phone-backup-banner";
+    b.style.cssText = "display:none;position:fixed;left:12px;right:12px;bottom:70px;z-index:9500;background:#c0392b;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:13px;font-weight:600;";
+    b.innerHTML = `<div style="margin-bottom:8px;">Today&apos;s backup is ready — save it to phone storage.</div>
+      <button type="button" onclick="savePendingBackupToPhone()" style="width:100%;padding:10px;border:none;border-radius:8px;background:#fff;color:#c0392b;font-weight:800;cursor:pointer;">Save to phone storage</button>`;
+    document.body.appendChild(b);
+  }
+  b.style.display = "block";
+}
+
+async function toggleAutoBackup(on){
+  const meta = getAutoBackupMeta();
+  const box = document.getElementById("auto-backup-enabled");
+  if(on){
+    const ok = await appConfirm(
+      "Daily auto backup will run ONCE PER DAY when you open this app after sign-in.\n\n" +
+      "• Stored on this phone (last 7 days; oldest replaced on day 8)\n" +
+      "• If internet is unavailable, backup is marked pending and runs on the next successful open\n" +
+      "• You can also tap Backup now anytime\n\n" +
+      "Enable auto backup?",
+      "Enable Auto Backup",
+      { okLabel: "Enable", cancelLabel: "Not now" }
+    );
+    if(!ok){
+      if(box) box.checked = false;
+      meta.enabled = false;
+      setAutoBackupMeta(meta);
+      refreshAutoBackupUI();
+      return;
+    }
+    meta.enabled = true;
+    meta.pending = true; // try immediately
+    setAutoBackupMeta(meta);
+    refreshAutoBackupUI();
+    await runAutoBackupNow(false);
+    await appAlert(
+      "Auto backup is ON.\n\nTiming: once per day when you open the app after sign-in.\nIf offline, it retries next open/online.\n\nNext: set phone save location so JSON files go to phone storage.",
+      "Auto Backup Enabled"
+    );
+    await setPhoneBackupLocation();
+  } else {
+    meta.enabled = false;
+    setAutoBackupMeta(meta);
+    refreshAutoBackupUI();
+  }
+}
+
+async function chooseAutoBackupFolder(){
+  if(!window.showDirectoryPicker){
+    await appAlert("Folder selection is supported in Chrome / Edge. Backups will still be kept on this device (last 7 days).", "Not Supported");
+    return;
+  }
+  try{
+    const handle = await window.showDirectoryPicker({ mode: "readwrite" });
+    // verify permission
+    if(handle.requestPermission){
+      const perm = await handle.requestPermission({ mode: "readwrite" });
+      if(perm !== "granted"){
+        await appAlert("Folder permission was not granted.", "Permission");
+        return;
+      }
+    }
+    autoBackupDirHandle = handle;
+    // persist handle in IndexedDB via structured clone
+    const db = await openAutoBackupDB();
+    await new Promise((resolve) => {
+      // store handle in a special key using separate store - simplify: keep in memory + try idb
+      try{
+        const tx = db.transaction(AUTO_BACKUP_STORE, "readwrite");
+        tx.objectStore(AUTO_BACKUP_STORE).put({
+          date: "__dir__",
+          handle: handle,
+          createdAt: Date.now()
+        });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      }catch(e){ resolve(); }
+    });
+    const meta = getAutoBackupMeta();
+    meta.folderName = handle.name || "Selected folder";
+    setAutoBackupMeta(meta);
+    refreshAutoBackupUI();
+    await appAlert("Backup folder set to: " + (handle.name || "folder") + "\\nDaily JSON files will be saved here when possible.", "Folder Selected");
+  }catch(e){
+    if(e && e.name === "AbortError") return;
+    await appAlert("Could not select folder: " + (e.message || e), "Error");
+  }
+}
+
+async function restoreDirHandle(){
+  try{
+    const db = await openAutoBackupDB();
+    const row = await new Promise((resolve) => {
+      const tx = db.transaction(AUTO_BACKUP_STORE, "readonly");
+      const req = tx.objectStore(AUTO_BACKUP_STORE).get("__dir__");
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+    if(row && row.handle){
+      autoBackupDirHandle = row.handle;
+      // re-check permission
+      if(autoBackupDirHandle.queryPermission){
+        let perm = await autoBackupDirHandle.queryPermission({ mode: "readwrite" });
+        if(perm !== "granted" && autoBackupDirHandle.requestPermission){
+          perm = await autoBackupDirHandle.requestPermission({ mode: "readwrite" });
+        }
+        if(perm !== "granted") autoBackupDirHandle = null;
+      }
+    }
+  }catch(e){}
+}
+
+async function refreshAutoBackupUI(){
+  const meta = getAutoBackupMeta();
+  const en = document.getElementById("auto-backup-enabled");
+  if(en) en.checked = !!meta.enabled;
+  const st = document.getElementById("auto-backup-status");
+  if(st){
+    if(!meta.enabled) st.textContent = "Off";
+    else if(meta.pending) st.textContent = "On · Pending retry (will run when online / next open)";
+    else if(meta.lastBackupDate) st.textContent = "On · Last: " + (meta.lastBackupLabel || meta.lastBackupDate) + " · Daily on app open";
+    else st.textContent = "On · Waiting for first backup (runs on open)";
+  }
+  const pathEl = document.getElementById("set-data-path");
+  if(pathEl){
+    pathEl.textContent = "Cloud (Firebase) + phone auto-backup (7 days)";
+  }
+  const phonePath = document.getElementById("auto-backup-phone-path");
+  if(phonePath){
+    phonePath.textContent = meta.phonePathLabel || (meta.folderName ? ("Folder: " + meta.folderName) : "Not set — tap “Set phone save location”");
+  }
+  const pendBtn = document.getElementById("btn-save-pending-phone");
+  if(pendBtn) pendBtn.style.display = meta.phoneSavePending ? "block" : "none";
+  if(meta.phoneSavePending) showPhoneBackupBanner(true);
+  else showPhoneBackupBanner(false);
+  const listEl = document.getElementById("auto-backup-list");
+  if(listEl){
+    const list = (await listAutoBackups()).filter(r => r.date !== "__dir__");
+    if(!list.length) listEl.textContent = "No local auto-backups yet.";
+    else listEl.innerHTML = list.map(r =>
+      `<div style="padding:4px 0;border-bottom:1px solid #eee;">📅 <b>${r.date}</b> · ${r.invoiceCount||0} docs · ${r.fileName||""}</div>`
+    ).join("");
+  }
+}
+
+// hook after login
+
 /* ==================== APP DIALOGS (no browser alert/confirm) ==================== */
 function ensureAppDialogDom(){
   if(document.getElementById("app-dialog-overlay")) return;
@@ -681,6 +1170,8 @@ function onFirebaseReady() {
   if(typeof loadItemMaster==="function") loadItemMaster();
   if(typeof claimExclusiveSession==="function") claimExclusiveSession();
   if(typeof startEraseRequestWatcher==="function") startEraseRequestWatcher();
+  if(typeof restoreDirHandle==="function") restoreDirHandle().then(function(){ ensureDailyAutoBackup(); refreshAutoBackupUI(); });
+  else if(typeof ensureDailyAutoBackup==="function") ensureDailyAutoBackup();
   // Load initial data into cache
   if (typeof dbGetAllInvoices === "function") {
     dbGetAllInvoices().then(list => {
@@ -2428,7 +2919,29 @@ E. & O.E.</textarea>
             <div class="set-acc" id="acc-backup">
                 <button type="button" class="set-acc-head" onclick="toggleSetAcc('acc-backup')"><span class="set-ico">💾</span><span class="set-head-text"><span class="set-head-title">Data Backup</span><span class="set-head-sub">Export / Import all data</span></span><span class="chev">▼</span></button>
                 <div class="set-acc-body">
-                    <p class="set-fixed-note"><b>Data location:</b> <span id="set-data-path">This device (IndexedDB)</span></p>
+                    <p class="set-fixed-note"><b>Data location:</b> <span id="set-data-path">Cloud (Firebase) + local auto-backup</span></p>
+                    <div style="background:#faf8f4;border:1px solid #e8e0d0;border-radius:10px;padding:12px;margin-bottom:12px;">
+                      <div style="font-weight:800;color:#2E1501;margin-bottom:6px;">Auto Backup (Mobile · 7 days)</div>
+                      <p class="set-fixed-note" style="margin:0 0 8px 0;">
+                        Saves up to <b>7 daily</b> backups on this phone. On day 8 the oldest is replaced.<br>
+                        <b>When:</b> once per day when you open the app after sign-in.<br>
+                        <b>If offline:</b> retries automatically next time the app opens with internet.
+                      </p>
+                      <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin-bottom:8px;">
+                        <input type="checkbox" id="auto-backup-enabled" onchange="toggleAutoBackup(this.checked)" style="width:18px;height:18px;">
+                        Enable daily auto backup
+                      </label>
+                      <div style="font-size:12px;color:#666;margin-bottom:8px;">Status: <span id="auto-backup-status">Off</span></div>
+                      <div style="font-size:12px;color:#555;margin-bottom:8px;padding:8px;background:#fff;border-radius:8px;border:1px solid #eee;">
+                        <b>Phone storage path:</b><br>
+                        <span id="auto-backup-phone-path">Not set — tap “Set phone save location” below</span>
+                      </div>
+                      <button type="button" class="btn" style="width:100%;margin:0 0 6px 0;background:#bf8f00;" onclick="setPhoneBackupLocation()">📁 Set phone save location</button>
+                      <button type="button" class="btn" style="width:100%;margin:0 0 6px 0;background:#1a6b5a;" onclick="runAutoBackupNow(true)">💾 Backup now</button>
+                      <button type="button" class="btn btn-grey" style="width:100%;margin:0 0 6px 0;" onclick="downloadLatestAutoBackup()">📥 Save latest file to phone</button>
+                      <button type="button" id="btn-save-pending-phone" class="btn btn-danger" style="width:100%;margin:0 0 6px 0;display:none;" onclick="savePendingBackupToPhone()">⬇️ Save TODAY&apos;s backup to phone storage</button>
+                      <div id="auto-backup-list" style="font-size:12px;color:#555;margin-top:8px;max-height:140px;overflow:auto;-webkit-overflow-scrolling:touch;"></div>
+                    </div>
                     <button type="button" class="btn" style="width:100%;margin:0 0 8px 0;background:#217346;" onclick="exportAllDataBackup()">📤 Export All Data (.json)</button>
                     <button type="button" class="btn btn-blue" style="width:100%;margin:0;" onclick="document.getElementById('import-backup-file').click()">📥 Import Data (.json)</button>
                     <input type="file" id="import-backup-file" accept=".json,application/json" style="display:none;" onchange="importAllDataBackup(event)">
@@ -3286,6 +3799,8 @@ function togglePassVis(inputId, btn){
 }
 
 function openSettings(){
+    try{ if(typeof refreshAutoBackupUI==="function") refreshAutoBackupUI(); }catch(e){}
+
     const s=getSettings();
     document.getElementById("set-shop-name").value=s.shopName;
     document.getElementById("set-address").value=s.address;
