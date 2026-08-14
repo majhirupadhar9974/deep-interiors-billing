@@ -2544,9 +2544,30 @@ input,select{
     max-width:100%!important;border-radius:14px 14px 0 0!important;max-height:92vh;
   }
   .reg-view-btn{width:40px;height:40px;font-size:18px;}
-  .row-del-btn{width:32px!important;height:32px!important;font-size:15px!important;}
+  /* row-del-btn size controlled in main item-row CSS */
   #entry-action-bar .btn{flex:1 1 42%;min-width:0;font-size:13px;padding:12px 8px;}
   .register-item-summary{align-items:center;}
+}
+
+
+/* Item row serial + compact delete */
+.row-sr{width:36px;min-width:36px;max-width:42px;padding:4px 2px!important;vertical-align:middle;}
+.row-sr-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+.row-sr-num{font-size:12px;font-weight:700;line-height:1.2;color:#333;}
+.row-del-btn{
+  width:20px;height:20px;min-width:20px;padding:0;margin:0;
+  border:none;border-radius:50%;
+  background:#f44336;color:#fff;
+  font-size:14px;font-weight:700;line-height:1;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  box-shadow:none;
+}
+.row-del-btn:active{opacity:.85;transform:scale(0.96);}
+@media screen and (max-width:700px){
+  .row-sr{width:32px;min-width:32px;max-width:36px;padding:2px 1px!important;}
+  .row-sr-num{font-size:11px;}
+  .row-del-btn{width:18px;height:18px;min-width:18px;font-size:13px;border-radius:50%;}
+  .items-table th:first-child,.items-table td.row-sr{width:32px;}
 }
 
 </style>
@@ -4013,9 +4034,11 @@ function applyFYDateLimits(){
 function createRow(serial){
     const tr=document.createElement("tr");
     tr.innerHTML=`
-        <td class="text-center row-sr" style="position:relative;">
-          <div class="row-sr-num">${serial}</div>
-          <button type="button" class="row-del-btn" title="Delete this item" onclick="deleteItemRow(this)" style="margin-top:6px;background:#f44336;color:#fff;border:none;border-radius:6px;width:28px;height:28px;font-size:14px;cursor:pointer;line-height:1;">🗑</button>
+        <td class="text-center row-sr">
+          <div class="row-sr-wrap">
+            <span class="row-sr-num">${serial}</span>
+            <button type="button" class="row-del-btn" title="Delete item" onclick="deleteItemRow(this)" aria-label="Delete item">×</button>
+          </div>
         </td>
         <td>
             <select class="item-gst" onchange="calculateTotal()">
@@ -4083,26 +4106,24 @@ function updateSerialNumbers(){
     document.querySelectorAll("#items-body tr").forEach((r,i)=>{
         const cell = r.querySelector(".row-sr");
         if(!cell) return;
-        // Only update serial number text — do NOT wipe delete button
         let num = cell.querySelector(".row-sr-num");
-        if(!num){
-            // migrate old structure if needed
-            const btn = cell.querySelector(".row-del-btn");
+        let btn = cell.querySelector(".row-del-btn");
+        if(!num || !btn){
             cell.innerHTML = "";
-            num = document.createElement("div");
+            const wrap = document.createElement("div");
+            wrap.className = "row-sr-wrap";
+            num = document.createElement("span");
             num.className = "row-sr-num";
-            cell.appendChild(num);
-            if(btn) cell.appendChild(btn);
-            else {
-                const b = document.createElement("button");
-                b.type = "button";
-                b.className = "row-del-btn";
-                b.title = "Delete this item";
-                b.setAttribute("onclick", "deleteItemRow(this)");
-                b.style.cssText = "margin-top:6px;background:#f44336;color:#fff;border:none;border-radius:6px;width:28px;height:28px;font-size:14px;cursor:pointer;line-height:1;";
-                b.textContent = "🗑";
-                cell.appendChild(b);
-            }
+            btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "row-del-btn";
+            btn.title = "Delete item";
+            btn.setAttribute("aria-label", "Delete item");
+            btn.setAttribute("onclick", "deleteItemRow(this)");
+            btn.textContent = "×";
+            wrap.appendChild(num);
+            wrap.appendChild(btn);
+            cell.appendChild(wrap);
         }
         num.textContent = i+1;
     });
