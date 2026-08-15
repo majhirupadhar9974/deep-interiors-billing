@@ -634,58 +634,64 @@ function appPrompt(message, defaultValue, title){
 // Replace browser popups
 window.alert = function(msg){ appAlert(String(msg)); };
 
-/* ==================== AUTO CAPITALIZE ==================== */
-function isCapsLockOn(e){
-  try { return !!(e && e.getModifierState && e.getModifierState("CapsLock")); } catch(err){ return false; }
-}
+
+/* ==================== AUTO CAPITALIZE (mobile-friendly) ==================== */
 function toTitleCase(str){
-  return String(str||"").replace(/\S+/g, w => w.charAt(0).toUpperCase() + w.slice(1));
+  return String(str||"").replace(/\S+/g, function(w){
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  });
 }
-function applySmartCapitalize(el, e){
-  if(!el || el.dataset.noCap === "1") return;
-  if(el.classList.contains("gstin-field") || (el.id||"").toLowerCase().includes("gstin")){
-    const start = el.selectionStart, end = el.selectionEnd;
-    const up = el.value.toUpperCase();
-    if(el.value !== up){ el.value = up; try{ el.setSelectionRange(start, end); }catch(err){} }
+function isAllCaps(str){
+  var s = String(str||"");
+  return s === s.toUpperCase() && /[A-Z]/.test(s);
+}
+function shouldSkipCap(el){
+  if(!el) return true;
+  if(el.dataset && el.dataset.noCap === "1") return true;
+  if(el.tagName !== "INPUT" && el.tagName !== "TEXTAREA") return true;
+  var t = (el.type || "").toLowerCase();
+  if(t === "password" || t === "email" || t === "number" || t === "date" || t === "file" || t === "checkbox" || t === "radio" || t === "hidden") return true;
+  if(el.classList.contains("item-qty") || el.classList.contains("item-rate") || el.classList.contains("item-gst")) return true;
+  var id = el.id || "";
+  if(id === "login-email" || id === "login-password") return true;
+  return false;
+}
+function applyCapToField(el, live){
+  if(shouldSkipCap(el)) return;
+  var isGst = el.classList.contains("gstin-field") || (el.id || "").toLowerCase().indexOf("gstin") >= 0;
+  if(isGst){
+    var start = el.selectionStart, end = el.selectionEnd;
+    var up = el.value.toUpperCase();
+    if(el.value !== up){
+      el.value = up;
+      try{ if(typeof start === "number") el.setSelectionRange(start, end); }catch(err){}
+    }
     return;
   }
-  if(isCapsLockOn(e)) return; // respect full caps when CapsLock on
-  // Only title-case if user is not holding Shift for ALL caps intent on this keystroke
-  if(e && e.shiftKey && e.key && e.key.length === 1 && e.key === e.key.toUpperCase()) return;
+  var v = el.value;
+  if(!v) return;
+  // If user typed full CAPS intentionally, keep on blur only check
+  if(!live && isAllCaps(v)) return;
+  if(live){
+    // While typing: capitalize first letter of each word (mobile soft keyboards)
+    var start2 = el.selectionStart, end2 = el.selectionEnd;
+    var next = toTitleCase(v);
+    // Avoid fighting mid-word lowercase edits: only if first char of last word needs fix
+    if(next !== v){
+      el.value = next;
+      try{ if(typeof start2 === "number") el.setSelectionRange(start2, end2); }catch(err){}
+    }
+  } else {
+    var titled = toTitleCase(v);
+    if(titled !== v) el.value = titled;
+  }
 }
-
 document.addEventListener("input", function(e){
-  const el = e.target;
-  if(!el || (el.tagName !== "INPUT" && el.tagName !== "TEXTAREA")) return;
-  if(el.type === "password" || el.type === "email" || el.type === "number" || el.type === "date" || el.type === "file") return;
-  if(el.classList.contains("item-qty") || el.classList.contains("item-rate") || el.classList.contains("item-gst")) return;
-  if((el.id||"") === "login-email" || (el.id||"") === "login-password") return;
-  // GSTIN always upper
-  if(el.classList.contains("gstin-field") || (el.id||"").toLowerCase().includes("gstin")){
-    const start = el.selectionStart, end = el.selectionEnd;
-    const up = el.value.toUpperCase();
-    if(el.value !== up){ el.value = up; try{ el.setSelectionRange(start, end); }catch(err){} }
-    return;
-  }
+  applyCapToField(e.target, true);
 });
-
 document.addEventListener("blur", function(e){
-  const el = e.target;
-  if(!el || (el.tagName !== "INPUT" && el.tagName !== "TEXTAREA")) return;
-  if(el.type === "password" || el.type === "email" || el.type === "number" || el.type === "date" || el.type === "file") return;
-  if(el.classList.contains("item-qty") || el.classList.contains("item-rate") || el.classList.contains("item-gst")) return;
-  if((el.id||"") === "login-email" || (el.id||"") === "login-password") return;
-  if(el.classList.contains("gstin-field") || (el.id||"").toLowerCase().includes("gstin")){
-    el.value = el.value.toUpperCase();
-    return;
-  }
-  // Title case on blur if not already ALL CAPS
-  const v = el.value;
-  if(!v.trim()) return;
-  if(v === v.toUpperCase() && /[A-Z]/.test(v)) return; // user typed full caps
-  el.value = toTitleCase(v);
+  applyCapToField(e.target, false);
 }, true);
-
 
 /* ==================== ITEM MASTER ==================== */
 let itemMasterCache = [];
@@ -848,6 +854,71 @@ function applyItemMasterToRow(inputEl){
     desc.value = master.description;
   }
 }
+
+/* ==================== ITEM NAME SUGGESTIONS (mobile) ==================== */
+var _itemSuggestBox = null;
+function ensureItemSuggestBox(){
+  if(_itemSuggestBox) return _itemSuggestBox;
+  var box = document.createElement("div");
+  box.id = "item-suggest-box";
+  box.style.cssText = "display:none;position:absolute;z-index:10040;background:#fff;border:1px solid #e0d8c8;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:200px;overflow-y:auto;-webkit-overflow-scrolling:touch;min-width:200px;";
+  document.body.appendChild(box);
+  _itemSuggestBox = box;
+  return box;
+}
+function hideItemSuggest(){
+  if(_itemSuggestBox) _itemSuggestBox.style.display = "none";
+}
+function showItemSuggestFor(inputEl){
+  if(!inputEl || !inputEl.classList.contains("item-name")) return;
+  if(typeof itemMasterCache === "undefined" || !itemMasterCache.length){
+    if(typeof loadItemMaster === "function") loadItemMaster();
+    hideItemSuggest();
+    return;
+  }
+  var q = (inputEl.value || "").trim().toLowerCase();
+  if(q.length < 1){ hideItemSuggest(); return; }
+  var matches = itemMasterCache.filter(function(it){
+    return (it.name || "").toLowerCase().indexOf(q) >= 0;
+  }).slice(0, 10);
+  if(!matches.length){ hideItemSuggest(); return; }
+  var box = ensureItemSuggestBox();
+  box.innerHTML = matches.map(function(it){
+    var name = String(it.name || "");
+    return '<button type="button" class="item-suggest-item" data-name="'+name.replace(/"/g,"&quot;")+'" style="display:block;width:100%;text-align:left;padding:12px 14px;border:none;border-bottom:1px solid #f0ebe3;background:#fff;font-size:14px;font-weight:600;color:#2E1501;cursor:pointer;">'+name.replace(/</g,"&lt;")+'</button>';
+  }).join("");
+  box.querySelectorAll(".item-suggest-item").forEach(function(btn){
+    btn.addEventListener("mousedown", function(ev){ ev.preventDefault(); }); // keep focus
+    btn.addEventListener("click", function(){
+      inputEl.value = btn.getAttribute("data-name") || btn.textContent;
+      hideItemSuggest();
+      if(typeof applyItemMasterToRow === "function") applyItemMasterToRow(inputEl);
+      inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  });
+  var rect = inputEl.getBoundingClientRect();
+  box.style.display = "block";
+  box.style.left = Math.max(8, rect.left + (window.scrollX||0)) + "px";
+  box.style.top = (rect.bottom + (window.scrollY||0) + 4) + "px";
+  box.style.width = Math.max(rect.width, 220) + "px";
+}
+document.addEventListener("input", function(e){
+  var el = e.target;
+  if(el && el.classList && el.classList.contains("item-name")) showItemSuggestFor(el);
+});
+document.addEventListener("focusin", function(e){
+  var el = e.target;
+  if(el && el.classList && el.classList.contains("item-name")){
+    if(typeof loadItemMaster === "function" && (!itemMasterCache || !itemMasterCache.length)) loadItemMaster();
+    showItemSuggestFor(el);
+  }
+});
+document.addEventListener("focusout", function(e){
+  setTimeout(hideItemSuggest, 200);
+});
+document.addEventListener("scroll", hideItemSuggest, true);
+
+
 
 
 /* ==================== AUTHORISED SIGNATORY + AUDIT ==================== */
@@ -3091,6 +3162,7 @@ let currentDocType = "quotation"; // "quotation" | "proforma"
 
 async function openDocument(type){
     window._printSignatory = getActiveSignatory(); // new doc → current user
+    if(typeof loadItemMaster==="function") loadItemMaster();
     currentDocType = type === "proforma" ? "proforma" : "quotation";
     const title = currentDocType === "proforma" ? "PROFORMA INVOICE" : "QUOTATION";
     const titleEl = document.getElementById("doc-type-title");
