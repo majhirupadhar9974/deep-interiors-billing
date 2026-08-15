@@ -1110,6 +1110,16 @@ function showErasePermissionDialog(req){
 }
 
 let eraseWatchUnsub = null;
+function eraseSeenKey(kind, id){
+  return "erase_seen_" + kind + "_" + String(id || "");
+}
+function hasEraseSeen(kind, id){
+  try { return localStorage.getItem(eraseSeenKey(kind, id)) === "1"; } catch(e){ return false; }
+}
+function markEraseSeen(kind, id){
+  try { localStorage.setItem(eraseSeenKey(kind, id), "1"); } catch(e){}
+}
+
 function startEraseRequestWatcher(){
   if(eraseWatchUnsub) return;
   eraseWatchUnsub = fs.collection("eraseRequests").doc("active").onSnapshot(async (snap) => {
@@ -1118,20 +1128,36 @@ function startEraseRequestWatcher(){
     const me = getCurrentUserEmail();
     if(!me) return;
 
-    // Pending request for the OTHER partner to approve
+    const reqId = req.createdAt || "active";
+
+    // Pending approval: show ONLY ONCE per request (not on every login/refresh)
     if(req.status === "pending" && (req.otherPartner||"").toLowerCase() === me){
+      if(hasEraseSeen("pending", reqId)) return;
+      markEraseSeen("pending", reqId);
       showErasePermissionDialog(req);
+      return;
     }
-    // Requester gets notified on reject/approve
+
+    // Reject/approve notice to requester: ONLY ONCE
     if((req.requestedBy||"").toLowerCase() === me){
-      if(req.status === "rejected" && req.resolvedAt && req.resolvedAt > (window._eraseNotifiedAt||0)){
-        window._eraseNotifiedAt = req.resolvedAt;
-        await appAlert("Erase request was rejected by " + (req.rejectedByName||"the other partner") + ".\nReason: " + (req.rejectReason||"—"), "Request Rejected");
+      if(req.status === "rejected" && req.resolvedAt){
+        const rid = "rej_" + req.resolvedAt;
+        if(hasEraseSeen("result", rid)) return;
+        markEraseSeen("result", rid);
+        await appAlert(
+          "Erase request was rejected by " + (req.rejectedByName||"the other partner") + ".\nReason: " + (req.rejectReason||"—"),
+          "Request Rejected"
+        );
       }
-      if(req.status === "approved" && req.resolvedAt && req.resolvedAt > (window._eraseNotifiedAt||0)){
-        window._eraseNotifiedAt = req.resolvedAt;
+      if(req.status === "approved" && req.resolvedAt){
+        const rid = "apr_" + req.resolvedAt;
+        if(hasEraseSeen("result", rid)) return;
+        markEraseSeen("result", rid);
         allInvoicesCache = [];
-        appAlert("Erase was approved by " + (req.approvedByName||"the other partner") + ".\nAll sales data has been cleared.", "Data Deleted");
+        await appAlert(
+          "Erase was approved by " + (req.approvedByName||"the other partner") + ".\nAll sales data has been cleared.",
+          "Data Deleted"
+        );
       }
     }
   });
