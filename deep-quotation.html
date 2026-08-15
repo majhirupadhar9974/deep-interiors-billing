@@ -855,53 +855,118 @@ function applyItemMasterToRow(inputEl){
   }
 }
 
-/* ==================== ITEM NAME SUGGESTIONS (mobile) ==================== */
+
+/* ==================== ITEM NAME SUGGESTIONS (app-style) ==================== */
 var _itemSuggestBox = null;
+var _itemSuggestInput = null;
+
 function ensureItemSuggestBox(){
-  if(_itemSuggestBox) return _itemSuggestBox;
+  if(_itemSuggestBox && document.body.contains(_itemSuggestBox)) return _itemSuggestBox;
   var box = document.createElement("div");
   box.id = "item-suggest-box";
-  box.style.cssText = "display:none;position:absolute;z-index:10040;background:#fff;border:1px solid #e0d8c8;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:200px;overflow-y:auto;-webkit-overflow-scrolling:touch;min-width:200px;";
+  box.innerHTML = '<div class="isug-head">Select from Item Master</div><div class="isug-list"></div>';
   document.body.appendChild(box);
   _itemSuggestBox = box;
+  if(!document.getElementById("item-suggest-css")){
+    var st = document.createElement("style");
+    st.id = "item-suggest-css";
+    st.textContent = [
+      "#item-suggest-box{display:none;position:fixed;z-index:10050;left:10px;right:10px;background:#fff;border:1px solid #e0d8c8;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.22);max-height:min(42vh,280px);overflow:hidden;flex-direction:column;}",
+      "#item-suggest-box.show{display:flex;}",
+      ".isug-head{padding:10px 14px;font-size:12px;font-weight:800;color:#fff;background:#bf8f00;letter-spacing:.3px;}",
+      ".isug-list{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;max-height:min(36vh,240px);}",
+      ".isug-item{display:block;width:100%;text-align:left;padding:14px 14px;border:none;border-bottom:1px solid #f0ebe3;background:#fff;font-size:15px;font-weight:600;color:#2E1501;cursor:pointer;line-height:1.35;}",
+      ".isug-item:active,.isug-item:hover{background:#faf6ee;}",
+      ".isug-item .isug-match{color:#bf8f00;}",
+      ".isug-empty{padding:16px;text-align:center;color:#888;font-size:13px;}"
+    ].join("");
+    document.head.appendChild(st);
+  }
   return box;
 }
+
 function hideItemSuggest(){
-  if(_itemSuggestBox) _itemSuggestBox.style.display = "none";
+  if(_itemSuggestBox){
+    _itemSuggestBox.classList.remove("show");
+    _itemSuggestBox.style.display = "none";
+  }
+  _itemSuggestInput = null;
 }
+
+function highlightMatch(name, q){
+  var n = String(name || "");
+  var qq = String(q || "").trim();
+  if(!qq) return n.replace(/</g,"&lt;");
+  var low = n.toLowerCase();
+  var i = low.indexOf(qq.toLowerCase());
+  if(i < 0) return n.replace(/</g,"&lt;");
+  var a = n.slice(0,i).replace(/</g,"&lt;");
+  var b = n.slice(i, i+qq.length).replace(/</g,"&lt;");
+  var c = n.slice(i+qq.length).replace(/</g,"&lt;");
+  return a + '<span class="isug-match">' + b + "</span>" + c;
+}
+
 function showItemSuggestFor(inputEl){
-  if(!inputEl || !inputEl.classList.contains("item-name")) return;
+  if(!inputEl || !inputEl.classList || !inputEl.classList.contains("item-name")) return;
+  _itemSuggestInput = inputEl;
   if(typeof itemMasterCache === "undefined" || !itemMasterCache.length){
-    if(typeof loadItemMaster === "function") loadItemMaster();
+    if(typeof loadItemMaster === "function") loadItemMaster().then(function(){ showItemSuggestFor(inputEl); });
     hideItemSuggest();
     return;
   }
-  var q = (inputEl.value || "").trim().toLowerCase();
-  if(q.length < 1){ hideItemSuggest(); return; }
-  var matches = itemMasterCache.filter(function(it){
-    return (it.name || "").toLowerCase().indexOf(q) >= 0;
-  }).slice(0, 10);
-  if(!matches.length){ hideItemSuggest(); return; }
+  var q = (inputEl.value || "").trim();
+  var qLow = q.toLowerCase();
+  var matches;
+  if(!qLow){
+    matches = itemMasterCache.slice(0, 30);
+  } else {
+    matches = itemMasterCache.filter(function(it){
+      return (it.name || "").toLowerCase().indexOf(qLow) >= 0;
+    }).slice(0, 40);
+  }
   var box = ensureItemSuggestBox();
-  box.innerHTML = matches.map(function(it){
-    var name = String(it.name || "");
-    return '<button type="button" class="item-suggest-item" data-name="'+name.replace(/"/g,"&quot;")+'" style="display:block;width:100%;text-align:left;padding:12px 14px;border:none;border-bottom:1px solid #f0ebe3;background:#fff;font-size:14px;font-weight:600;color:#2E1501;cursor:pointer;">'+name.replace(/</g,"&lt;")+'</button>';
-  }).join("");
-  box.querySelectorAll(".item-suggest-item").forEach(function(btn){
-    btn.addEventListener("mousedown", function(ev){ ev.preventDefault(); }); // keep focus
-    btn.addEventListener("click", function(){
-      inputEl.value = btn.getAttribute("data-name") || btn.textContent;
-      hideItemSuggest();
-      if(typeof applyItemMasterToRow === "function") applyItemMasterToRow(inputEl);
-      inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+  var list = box.querySelector(".isug-list");
+  if(!matches.length){
+    list.innerHTML = '<div class="isug-empty">No matching item in master</div>';
+  } else {
+    list.innerHTML = matches.map(function(it){
+      var name = String(it.name || "");
+      var safe = name.replace(/&/g,"&amp;").replace(/"/g,"&quot;");
+      return '<button type="button" class="isug-item" data-name="'+safe+'">'+highlightMatch(name, q)+'</button>';
+    }).join("");
+    list.querySelectorAll(".isug-item").forEach(function(btn){
+      btn.addEventListener("mousedown", function(ev){ ev.preventDefault(); });
+      btn.addEventListener("click", function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        var chosen = btn.getAttribute("data-name") || "";
+        // decode entities basic
+        var t = document.createElement("textarea");
+        t.innerHTML = chosen;
+        chosen = t.value;
+        inputEl.value = chosen;
+        hideItemSuggest();
+        if(typeof applyItemMasterToRow === "function") applyItemMasterToRow(inputEl);
+        try{ inputEl.dispatchEvent(new Event("input", { bubbles: true })); }catch(e){}
+        try{ inputEl.blur(); }catch(e){}
+      });
     });
-  });
+  }
+  // Position just below the input, full width on mobile
   var rect = inputEl.getBoundingClientRect();
-  box.style.display = "block";
-  box.style.left = Math.max(8, rect.left + (window.scrollX||0)) + "px";
-  box.style.top = (rect.bottom + (window.scrollY||0) + 4) + "px";
-  box.style.width = Math.max(rect.width, 220) + "px";
+  var spaceBelow = window.innerHeight - rect.bottom;
+  box.style.display = "flex";
+  box.classList.add("show");
+  if(spaceBelow < 160 && rect.top > 180){
+    // show above input
+    box.style.top = "auto";
+    box.style.bottom = (window.innerHeight - rect.top + 6) + "px";
+  } else {
+    box.style.bottom = "auto";
+    box.style.top = Math.min(rect.bottom + 6, window.innerHeight - 120) + "px";
+  }
 }
+
 document.addEventListener("input", function(e){
   var el = e.target;
   if(el && el.classList && el.classList.contains("item-name")) showItemSuggestFor(el);
@@ -909,17 +974,30 @@ document.addEventListener("input", function(e){
 document.addEventListener("focusin", function(e){
   var el = e.target;
   if(el && el.classList && el.classList.contains("item-name")){
-    if(typeof loadItemMaster === "function" && (!itemMasterCache || !itemMasterCache.length)) loadItemMaster();
-    showItemSuggestFor(el);
+    el.setAttribute("autocomplete", "off");
+    if(typeof loadItemMaster === "function" && (!itemMasterCache || !itemMasterCache.length)){
+      loadItemMaster().then(function(){ showItemSuggestFor(el); });
+    } else {
+      showItemSuggestFor(el);
+    }
   }
 });
 document.addEventListener("focusout", function(e){
-  setTimeout(hideItemSuggest, 200);
+  setTimeout(function(){
+    var ae = document.activeElement;
+    if(ae && _itemSuggestBox && _itemSuggestBox.contains(ae)) return;
+    if(ae && ae.classList && ae.classList.contains("item-name")) return;
+    hideItemSuggest();
+  }, 180);
 });
-document.addEventListener("scroll", hideItemSuggest, true);
-
-
-
+document.addEventListener("scroll", function(){
+  if(_itemSuggestInput && _itemSuggestBox && _itemSuggestBox.classList.contains("show")){
+    showItemSuggestFor(_itemSuggestInput);
+  }
+}, true);
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape") hideItemSuggest();
+});
 
 /* ==================== AUTHORISED SIGNATORY + AUDIT ==================== */
 const SIGNATORY_MAP = {
@@ -4148,7 +4226,7 @@ function createRow(serial){
             </select>
         </td>
         <td>
-            <input type="text" class="item-name" placeholder="Item Name / Particulars" list="item-master-list" style="margin-bottom:4px;font-weight:bold;" onblur="applyItemMasterToRow(this)" onchange="applyItemMasterToRow(this)" autocomplete="off">
+            <input type="text" class="item-name" placeholder="Item Name / Particulars" style="margin-bottom:4px;font-weight:bold;" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" onblur="applyItemMasterToRow(this)" onchange="applyItemMasterToRow(this)">
             <textarea class="item-desc" placeholder="Description (optional, auto from master)" rows="2" style="width:100%;font-size:12px;resize:vertical;min-height:36px;"></textarea>
         </td>
         <td>
